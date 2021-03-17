@@ -67,3 +67,30 @@ while [ 1 ]; do
     sleep 60
 done
 ```
+
+or better yet, put it in cron:
+```
+echo "* * * * * pi /home/pi/code/rpi/7_temperature/7_temperature.sh > /tmp/7_temperature.last.log" | sudo tee /etc/cron.d/7_temperature
+```
+
+Realizing we do not need python for this:
+
+```
+echo "* * * * * pi /home/pi/code/rpi/7_temperature/7_temperature_pure_bash.sh > /tmp/7_temperature.last.log" | sudo tee /etc/cron.d/7_temperature
+```
+
+However, it would be nice to be able to import a class in python that can easily fetch the temperature, so lets make one!
+
+## import temperature
+
+```
+from temperature import Temperature
+
+Temperature.load()
+print('The temperature is %sF' % Temperature.F)
+print('The temperature is %sC' % Temperature.C)
+```
+
+The reason we do Temperature.load() is that it takes about 1 second to read the 1 wire device, so we want to cache the answer.
+
+We do not need to run Temperature.load()  
