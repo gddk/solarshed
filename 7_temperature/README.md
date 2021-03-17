@@ -33,7 +33,7 @@ cd
 mkdir -p venvs
 cd venvs
 python3 -m venv temperature
-souuce temperature/bin/activate
+source temperature/bin/activate
 ```
 
 ## Clone this repo
@@ -86,11 +86,10 @@ However, it would be nice to be able to import a class in python that can easily
 ```
 from temperature import Temperature
 
-Temperature.load()
-print('The temperature is %sF' % Temperature.F)
-print('The temperature is %sC' % Temperature.C)
+t = Temperature(30)
+print('The temperature is %sF' % t.F)
+print('The temperature is %sC' % t.C)
 ```
 
-The reason we do Temperature.load() is that it takes about 1 second to read the 1 wire device, so we want to cache the answer.
-
-We do not need to run Temperature.load()  
+The reason we do Temperature(30) is that it takes about 1 second to read the 1 wire device, so we want to cache the answer.
+30 is the number of seconds to cache the answer for.
