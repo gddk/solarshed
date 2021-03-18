@@ -93,3 +93,14 @@ print('The temperature is %sC' % t.C)
 
 The reason we do Temperature(30) is that it takes about 1 second to read the 1 wire device, so we want to cache the answer.
 30 is the number of seconds to cache the answer for.
+
+
+## Heartbeat monitoring
+
+/etc/cron.d/heartbeat
+```
+* * * * * pi BUCKET=yourbucket /home/pi/code/rpi/7_temperature/heartbeat.sh &>/dev/null
+```
+
+The idea is then to monitor the timestamp on this file in AWS S3 using a lambda that will alert if too old.
+
