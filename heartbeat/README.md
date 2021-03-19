@@ -12,8 +12,7 @@ Alert when raspberry pi stops working
 
 The idea is then to monitor the timestamp on this file in AWS S3 using a lambda that will alert if too old.
 
+## Lambda 
 
-## Generate payload.json
-```
-cat pagerduty_payload.json | sed -e "s/##NOW##/$(date +"%Y-%m-%dT%T.%3N%z")/" -e "s/##LAST##/$(tail -n 1 /tmp/heartbeat.txt)/" > payload.json"
-```
+See lambda_function.py
+
