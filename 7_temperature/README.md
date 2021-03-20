@@ -24,7 +24,7 @@ sudo shutdown -h now
 
 ## Now wire up like this
 
-![SunFounder DS18B20 Wired to Rasberry Pi 4](7_temperature.png "SunFounder DS18B20 Wired to Rasberry Pi 4")
+![SunFounder DS18B20 Wired to Rasberry Pi 4](7_temperature-compressed.jpg "SunFounder DS18B20 Wired to Rasberry Pi 4")
 
 ## Setup python3 Virtual Env
 
