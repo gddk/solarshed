@@ -2,6 +2,8 @@ import json
 from urllib import request
 import boto3
 import datetime
+import hashlib
+import os
 
 print('Loading function')
 
@@ -23,14 +25,19 @@ def lambda_handler(event, context):
         last_mod = response.get("LastModified")
         now = datetime.datetime.now(datetime.timezone.utc)
         first_line = response.get('Body').read().decode('utf-8').split('\n')[0]
-        if int((now - last_mod).total_seconds()) > 60 * 30:
-            alert = 'WARNING: It has been more than 30 minutes, ' + str(
+        if int((now - last_mod).total_seconds()) > 15 * 60:
+            alert = 'WARNING: It has been more than 15 minutes, ' + str(
                 int((now - last_mod).total_seconds()/60))
         else:
             print('OK: ' + str(int((now - last_mod).total_seconds()/60)) +
             ' ' + first_line)
             return True
         print(alert)
+
+        hash = hashlib.sha1()
+        hash.update(str('solarshed heartbeat ' + now.strftime('%Y-%m-%d'))
+                    .encode('utf-8'))
+        dedup_key = str(hash.hexdigest())
 
         last_mod_str = last_mod.strftime('%Y-%m-%dT%H:%M:%S.%f%z')
         data = {
@@ -48,11 +55,12 @@ def lambda_handler(event, context):
                   "message": alert
                 }
             },
-            "routing_key": "a52bbb5d27044209d0962681dc29de55",
+            "routing_key": os.environ.get('ROUTING_KEY'),
+            "dedup_key": dedup_key,
             "event_action": "trigger",
             "client": "AWS Lambda"
         }
-
+        print('data = ' + json.dumps(data))
         url = 'https://events.pagerduty.com/v2/enqueue'
         headers = {'Content-Type':'application/json'}
         bindata = json.dumps(data).encode('utf-8')
