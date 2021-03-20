@@ -25,7 +25,7 @@ def lambda_handler(event, context):
         last_mod = response.get("LastModified")
         now = datetime.datetime.now(datetime.timezone.utc)
         first_line = response.get('Body').read().decode('utf-8').split('\n')[0]
-        if int((now - last_mod).total_seconds()) > -1:
+        if int((now - last_mod).total_seconds()) > 15 * 60:
             alert = 'WARNING: It has been more than 15 minutes, ' + str(
                 int((now - last_mod).total_seconds()/60))
         else:
