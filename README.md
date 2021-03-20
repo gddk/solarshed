@@ -15,7 +15,7 @@ Also to monitor health stats and alert, through PagerDuty [PageDuty](https://www
 
 At this point, 2021-03-20, the SSRs didn't work at first when I had it connected to GPIO. The LED came on and I detected 120V on both sides of the SSR, but the AIMS inverter wouldn't accept it. Then I read in the reviews of the SSR that raspberry pi GPIO pushes enough current to light up the LED and make about half of the AC current flow, but to make it actually work, have to connect it to the 5V power supply. The current used at 3.6VDC is 6.4mA, which is more than GPIO can push. At 5VDC it'll be closer to 5mA. Solution:  5V -- (SSR) > -- (collector,2n3904 npn Transistor,emmitter) -- GND. Then the GPIO -- 10kΩ -- 4.7kΩ --  (base,2n3904 npn Transistor). (edited) 
 
-Here is all the parts I bought, some of which I'm still waiting on; must importantly the 
+Here are all the parts purchased for this project; some not yet arrived.
 
 * [CanaKit Raspberry Pi 4 8GB Starter Kit - 8GB RAM ](https://www.amazon.com/gp/product/B08956GVXN/)
 * [Twidec/Output Single Phase SSR Solid State Relay 100A 3-32V DC to 24-480V AC SSR-100DA](https://www.amazon.com/gp/product/B07P78BVM7/) * 2
@@ -27,7 +27,7 @@ Here is all the parts I bought, some of which I'm still waiting on; must importa
 * [BUD Industries JBH-4961-KO Steel NEMA 1 Sheet Metal Box with Knockout and Hinged Cover, 10" Width x 10" Height x 6" Depth, Gray Finish](https://www.amazon.com/gp/product/B005UPA10Y/)
 * [Ableconn PI232DB9M Compact GPIO TX/RX to DB9M RS232 Serial Expansion Board for Raspberry Pi](https://www.amazon.com/gp/product/B00WPBXDJC/)
 * [StarTech.com 2m Black Straight Through DB9 RS232 Serial Cable - DB9 RS232 Serial Extension Cable - Male to Female Cable MXT1002MBK, 6.6 ft / 2m](https://www.amazon.com/gp/product/B00A6GIUZA/)
-* [ALLDREI 0 Ω to 1 Mega Ohm Resistors Assortment Kit of 1% Tolerance | 1/4W Metal Film Resistor Set/Pack of 550 Pcs and 17 Values/Excellent Fit to Breadboards/Arduino and Raspberry pi](https://www.amazon.com/gp/product/B07D433FZG/
+* [ALLDREI 0 Ω to 1 Mega Ohm Resistors Assortment Kit](https://www.amazon.com/gp/product/B07D433FZG/)
 * [MCIGICM 200pcs 2n3904 npn Transistor, 2n3904 Bipolar BJT Transistors NPN 40V 200mA 300MHz 625mW TO-92-3](https://www.amazon.com/gp/product/B06XRBLKDR/)
 
 ## Temperature Sensing
