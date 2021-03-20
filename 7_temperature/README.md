@@ -94,3 +94,7 @@ print('The temperature is %sC' % t.C)
 The reason we do Temperature(30) is that it takes about 1 second to read the 1 wire device, so we want to cache the answer.
 30 is the number of seconds to cache the answer for.
 
+
+## Monitoring with PagerDuty
+
+Using grafana to send alerts to PagerDuty when temperature thresholds are breached.
