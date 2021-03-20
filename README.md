@@ -3,7 +3,7 @@ Personal rasberry pi projects
 
 ## Overview
 
-Raspberry Pi to control a pair of SSR to maximize efficiency of solar use. By toggling these SSRs to the ON position, I'm essentially doing a pass through of grid power to the load. The inverter prioritizes grid power, so if it's there, it does a pass thru and does not use the battery bank. The raspberry pi will monitor the battery voltage and when too low (i.e. ~65% DOD), toggle ON the the SSRs to trigger the inverter to switch from battery powered to grid powered.
+Raspberry Pi to control a pair of SSR to maximize efficiency of solar use. By toggling these SSRs to the ON position, it's a pass through of grid power to the load. The inverter prioritizes grid power, so if it's there, it does a pass thru and does not use the battery bank. The raspberry pi will monitor the battery voltage and when too low (i.e. ~65% DOD), toggle ON the the SSRs to trigger the inverter to switch from battery powered to grid powered.
 
 Also to gather health stats of the solar shed for graphing over time.
 
@@ -13,7 +13,7 @@ Also to monitor health stats and alert, through PagerDuty [PageDuty](https://www
 
 ![Raspberry Pi Controlling SSR Inside](ssr_inside_box-compressed.jpg "Raspberry Pi Controlling SSR Inside")
 
-At this point, 2021-03-20, the SSRs didn't work at first when I had it connected to GPIO. The LED came on and I detected 120V on both sides of the SSR, but the AIMS inverter wouldn't accept it. Then I read in the reviews of the SSR that raspberry pi GPIO pushes enough current to light up the LED and make about half of the AC current flow, but to make it actually work, have to connect it to the 5V power supply. The current used at 3.6VDC is 6.4mA, which is more than GPIO can push. At 5VDC it'll be closer to 5mA. Solution:  5V -- (SSR) > -- (collector,2n3904 npn Transistor,emmitter) -- GND. Then the GPIO -- 10kΩ -- 4.7kΩ --  (base,2n3904 npn Transistor). (edited) 
+At this point, 2021-03-20, the SSRs didn't work at first when connected to GPIO. The LED came on and detected 120V on both sides of the SSR, but the inverter wouldn't accept it. Reviews of the SSR stated raspberry pi GPIO pushes enough current to light up the LED and make about half of the AC current flow, but to make it actually work, have to connect it to the 5V power supply. The current used at 3.6VDC is 6.4mA, which is more than GPIO can push. At 5VDC it'll be closer to 5mA. Solution:  5V -- (SSR) > -- (collector,2n3904 npn Transistor,emmitter) -- GND. Then the GPIO -- 10kΩ -- 4.7kΩ --  (base,2n3904 npn Transistor). (edited) 
 
 Here are all the parts purchased for this project; some not yet arrived.
 
@@ -32,13 +32,13 @@ Here are all the parts purchased for this project; some not yet arrived.
 
 ## Temperature Sensing
 
-This was the first project and the very first thing I did with the raspberry pi. I need to get alerted if the temperature is too high, i.e. above 95F. I plan to take some immediate measures of toggling OFF grid power, in case the problem is too much AMPs going through the SSRs, which puts off heat. Maybe the fan inside the electric box failed? Granted, if I switch to grid power at night or on a cloudy day, I could run out of battery, especially considering it got toggled ON to grid power when reaching a low threshold, ie 65% DOD, so there isn't much left on the batteries anyway. Luckily the inverter will auto shutdown if the battery voltage drops below 49%.
+This was the first sub-project or the project; allert if the temperature is too high, i.e. above 95F. The pllan is to take immediate measures of toggling OFF grid power, in case the problem is too much AMPs going through the SSRs, which puts off heat. NOTE: the temperature sensor is inside the electrical box. Granted, if we switch to grid power at night, or on a cloudy day, we could run out of battery, especially considering it got toggled ON to grid power when reaching a low threshold, ie 65% DOD, so there isn't much left on the batteries anyway. Luckily the inverter will auto shutdown if the battery voltage drops below 49%.
 
 See [7_temperature](7_temperature/) for all the details. 
 
 ## Heartbeat monitorting
 
-In the last example, what if the scneario occurs where grid power is OFF and battery runs below 49% and inverter turns off and raspberry pi is therefore powered off? Since the raspberry pi is performing the monitoring, I need to know if it's not running! Hence heartbeat.
+In the last example, what if the scneario occurs where grid power is OFF and battery runs below 49% and inverter turns off and raspberry pi is therefore powered off? Since the raspberry pi is performing the monitoring, we need to know if it's not running! Hence heartbeat.
 
 The model is this: every 5 minutes the raspberry pi uploads a file to AWS S3. Then a Lambda is triggered every 5 minutes that checks the Last-Modified time stamp of that file. If the Last-Modified gets too old, i.e. 15 minutes, then trigger alert to PagerDuty.
 
@@ -48,7 +48,7 @@ See [heartbeat](heartbeat/) for all the details.
 
 This is so when viewing from external, ie cafe, the data is encrypted while in transit, especially grafana username/password!
 
-This examples uses port 30000, you can use any port you want. I just choose 30000 for ease of remembering and certainly not commonly used for something else.
+This examples uses port 30000, you can use any port you want. 30000 was for ease of remembering and not commonly used for something else.
 
 ```
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt
