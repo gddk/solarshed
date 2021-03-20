@@ -22,21 +22,17 @@ def lambda_handler(event, context):
         response = s3.get_object(Bucket=bucket, Key=key)
         last_mod = response.get("LastModified")
         now = datetime.datetime.now(datetime.timezone.utc)
-
-        if not last_mod:
-            alert = 'last_mod not found'
-        elif int((now - last_mod).total_seconds()) > 60 * 30:
+        first_line = response.get('Body').read().decode('utf-8').split('\n')[0]
+        if int((now - last_mod).total_seconds()) > 60 * 30:
             alert = 'WARNING: It has been more than 30 minutes, ' + str(
                 int((now - last_mod).total_seconds()/60))
         else:
-            print('OK: ' + str(int((now - last_mod).total_seconds()/60)))
+            print('OK: ' + str(int((now - last_mod).total_seconds()/60)) +
+            ' ' + first_line)
             return True
         print(alert)
-        lines = response.get('Body').read().decode('utf-8').split('\n')
-        last_line = ', '.join(lines[len(lines)-2:])
-        last_mod_str = 'not found'
-        if last_mod:
-            last_mod_str = last_mod.strftime('%Y-%m-%dT%H:%M:%S.%f%z')
+
+        last_mod_str = last_mod.strftime('%Y-%m-%dT%H:%M:%S.%f%z')
         data = {
             "payload": {
                 "summary": "Solar Shed Heartbeat Alert",
@@ -47,11 +43,12 @@ def lambda_handler(event, context):
                 "group": "solar-shed",
                 "class": "heartbeat",
                 "custom_details": {
-                  "last_line": last_line,
-                  "last_modified": last_mod_str
+                  "last_heartbeat": first_line,
+                  "last_modified": last_mod_str,
+                  "message": alert
                 }
             },
-            "routing_key": "your routing key",
+            "routing_key": "a52bbb5d27044209d0962681dc29de55",
             "event_action": "trigger",
             "client": "AWS Lambda"
         }
@@ -67,6 +64,8 @@ def lambda_handler(event, context):
         return True
     except Exception as e:
         print(e)
-        print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
+        print('Error getting object {} from bucket {}. '
+              'Make sure they exist and your bucket is in the same region '
+              'as this function.'.format(key, bucket))
         raise e
 
