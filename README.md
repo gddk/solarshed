@@ -133,20 +133,19 @@ add_header X-Content-Type-Options nosniff;
 add_header X-XSS-Protection "1; mode=block";
 ```
 
-
 ## SSR write state
 
 See [ssr/ssr_write_state.py](ssr/ssr_write_state.py)
 
 ## Grafana Dashboard
 
-Here is the dashboard view so far as of 2021-03-21. Will update as this advances. Next up is connecting to the MATE2 over DB9 RS232 Serial Cable with 
+Here is the dashboard view so far as of 2021-03-21. Will update as this advances. 
 
 ![2021-03-21 Solar Shed Dashboard](images/2021-03-21-dashboard.png "2021-03-21 Solar Shed Dashboard")
 
 ## Get MATE2 stats over DB9 RS232 Serial Cable
 
-2021-03-21 NOTE: The hardware has not arrived yet.
+2021-03-21 NOTE: The hardware has not arrived yet. This is the next sub-project to do.
 
 * [Ableconn PI232DB9M Compact GPIO TX/RX to DB9M RS232 Serial Expansion Board for Raspberry Pi](https://www.amazon.com/gp/product/B00WPBXDJC/)
 * [StarTech.com 2m Black Straight Through DB9 RS232 Serial Cable - DB9 RS232 Serial Extension Cable - Male to Female Cable MXT1002MBK, 6.6 ft / 2m](https://www.amazon.com/gp/product/B00A6GIUZA/)
