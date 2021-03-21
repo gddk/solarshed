@@ -132,3 +132,30 @@ add_header X-Frame-Options DENY;
 add_header X-Content-Type-Options nosniff;
 add_header X-XSS-Protection "1; mode=block";
 ```
+
+
+## SSR write state
+
+See [ssr/ssr_write_state.py](ssr/ssr_write_state.py)
+
+## Grafana Dashboard
+
+Here is the dashboard view so far as of 2021-03-21. Will update as this advances. Next up is connecting to the MATE2 over DB9 RS232 Serial Cable with 
+
+![2021-03-21 Solar Shed Dashboard](images/2021-03-21-dashboard.png "2021-03-21 Solar Shed Dashboard")
+
+## Get MATE2 stats over DB9 RS232 Serial Cable
+
+2021-03-21 NOTE: The hardware has not arrived yet.
+
+* [Ableconn PI232DB9M Compact GPIO TX/RX to DB9M RS232 Serial Expansion Board for Raspberry Pi](https://www.amazon.com/gp/product/B00WPBXDJC/)
+* [StarTech.com 2m Black Straight Through DB9 RS232 Serial Cable - DB9 RS232 Serial Extension Cable - Male to Female Cable MXT1002MBK, 6.6 ft / 2m](https://www.amazon.com/gp/product/B00A6GIUZA/)
+
+Should be here Tuesday 3/23.
+
+This will allow fetch of the battery voltage, which is the single most important factor in determining if Grid should be ON, meaning SSRs in the ON position. 
+
+I am worried about toggling... i.e. the battery voltage drops below threshold triggering the SSRs to be ON, and then the battery voltage shoots up once the load is removed, triggering the SSRs to be turned OFF again. Will need to build in a time delay for once the SSRs are turned ON, do not turn OFF again for at least X minutes, where X is dependent on the time of day. If still sunny out, X can be 30 minutes, but if it's dark out, stay ON (grid on) until it's light out again. 
+
+The algorithm for decideing if SSR OFF (grid off, solar on) should be activated: It has been >X minutes since last SSR ON event AND it is sunny AND battery voltage > Y Volts. We can play with X and Y to find the most optimal values, start with 30 and 50.
+
