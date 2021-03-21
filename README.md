@@ -11,7 +11,7 @@ It also monitors health stats and does alerting, through PagerDuty [PageDuty](ht
 
 ![Raspberry Pi Controlling SSR Top](images/rpi_outside_box.jpg "Raspberry Pi Controlling SSR Top")
 
-![Raspberry Pi Controlling SSR Inside](ssr_inside_box.jpg "Raspberry Pi Controlling SSR Inside")
+![Raspberry Pi Controlling SSR Inside](images/ssr_inside_box.jpg "Raspberry Pi Controlling SSR Inside")
 
 2021-03-20 Note: The SSRs didn't work at first when connected to GPIO. The LED came on and detected 120V on both sides of the SSR, but the inverter wouldn't accept it. Reviews of the SSR stated raspberry pi GPIO pushes enough current to light up the LED and make about half of the AC current flow, but to make it actually work, have to connect it to the 5V power supply. The current used at 3.6VDC is 6.4mA, which is more than GPIO can push. At 5VDC it'll be closer to 5mA. 
 
