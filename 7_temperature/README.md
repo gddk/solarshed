@@ -79,9 +79,13 @@ Realizing we do not need python for this:
 echo "* * * * * pi /home/pi/code/rpi/7_temperature/7_temperature_pure_bash.sh > /tmp/7_temperature.last.log" | sudo tee /etc/cron.d/7_temperature
 ```
 
-However, it would be nice to be able to import a class in python that can easily fetch the temperature, so lets make one!
+NOTE: all cron entries are in [../cron.d/rpi](../cron.d/rpi)
 
 ## import temperature
+
+It would be nice to be able to import a class in python that can easily fetch the temperature, so lets make one!
+
+See [temperature.py](temperature.py). Here is how to use it:
 
 ```
 from temperature import Temperature

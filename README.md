@@ -3,17 +3,47 @@ Personal rasberry pi projects
 
 ## Overview
 
-Raspberry Pi to control a pair of SSR to maximize efficiency of solar use. By toggling these SSRs to the ON position, it's a pass through of grid power to the load. The inverter prioritizes grid power, so if it's there, it does a pass thru and does not use the battery bank. The raspberry pi will monitor the battery voltage and when too low (i.e. ~65% DOD), toggle ON the the SSRs to trigger the inverter to switch from battery powered to grid powered.
+Raspberry Pi to control a pair of SSR to maximize efficiency of solar use. The inverter is configured to prioritize grid power, so if it's there, it does a pass thru and does not use (aka invert) the battery bank. Therefore, by toggling these SSRs to the ON position, this is powering the load from the grid. The raspberry pi will monitor the battery voltage and when too low (i.e. ~65% DOD), toggle ON the the SSRs to trigger the inverter to switch from battery powered to grid powered.
 
-Also to gather health stats of the solar shed for graphing over time.
+This repo also gathers health stats of the solar shed for graphing over time. It uses [graphite](https://graphiteapp.org/), [grafana](https://grafana.com/), [collectd](https://collectd.org/).
 
-Also to monitor health stats and alert, through PagerDuty [PageDuty](https://www.pagerduty.com/) 
+It also monitors health stats and does alerting, through PagerDuty [PageDuty](https://www.pagerduty.com/) and [AWS](https://aws.amazon.com/).
 
-![Raspberry Pi Controlling SSR Top](rpi_top_box-compressed.jpg "Raspberry Pi Controlling SSR Top")
+![Raspberry Pi Controlling SSR Top](images/rpi_outside_box.jpg "Raspberry Pi Controlling SSR Top")
 
-![Raspberry Pi Controlling SSR Inside](ssr_inside_box-compressed.jpg "Raspberry Pi Controlling SSR Inside")
+![Raspberry Pi Controlling SSR Inside](ssr_inside_box.jpg "Raspberry Pi Controlling SSR Inside")
 
-At this point, 2021-03-20, the SSRs didn't work at first when connected to GPIO. The LED came on and detected 120V on both sides of the SSR, but the inverter wouldn't accept it. Reviews of the SSR stated raspberry pi GPIO pushes enough current to light up the LED and make about half of the AC current flow, but to make it actually work, have to connect it to the 5V power supply. The current used at 3.6VDC is 6.4mA, which is more than GPIO can push. At 5VDC it'll be closer to 5mA. Solution:  5V -- (SSR) > -- (collector,2n3904 npn Transistor,emmitter) -- GND. Then the GPIO -- 10kΩ -- 4.7kΩ --  (base,2n3904 npn Transistor). (edited) 
+2021-03-20 Note: The SSRs didn't work at first when connected to GPIO. The LED came on and detected 120V on both sides of the SSR, but the inverter wouldn't accept it. Reviews of the SSR stated raspberry pi GPIO pushes enough current to light up the LED and make about half of the AC current flow, but to make it actually work, have to connect it to the 5V power supply. The current used at 3.6VDC is 6.4mA, which is more than GPIO can push. At 5VDC it'll be closer to 5mA. 
+
+Solution:  5V -- (SSR) > -- (collector,2n3904 npn Transistor,emmitter) -- GND. Then the GPIO -- 10kΩ -- 4.7kΩ --  (base,2n3904 npn Transistor).
+
+How do we know to use 14.7kΩ of resistors!?  Ohms Law. V = RI. We need to solve for R, so R=V/I.
+
+Here are the specs of the 2n3904 npn Transistor purchased
+
+```
+Transistor Type:NPN
+Current - Collector (Ic) (Max):200mA
+Voltage - Collector Emitter Breakdown (Max):40V
+Vce Saturation (Max) @ Ib, Ic:300mV @ 5mA, 50mA
+DC Current Gain (hFE) (Min) @ Ic, Vce:100 @ 10mA, 1V
+Power - Max:625mW
+Frequency - Transition:300MHz
+Mounting Type:Through Hole
+Supplier Device Package:TO-92 
+```
+
+* The 2n3904 npn Transistor requires 0.7V at 0.18mA, or 0.00018 A, to activate. The actual I(B), or β, or Beta, is dependent on the current through the collector and emitter. Not sure how to calculate this.  I(B) = I(C) / β. I(C) = 4.6mA = 0.0046A. The β spec is "DC Current Gain (hFE) (Min) @ Ic, Vce:100 @ 10mA, 1V". Our circuit is 4.6mA, not sure how to do this math, so let's use β of 100. I(B) = 0.004.6/100 = 0.000046. 2.6V/0.000046 = 57kΩ. Closest resistor in stock is 47kΩ, if we used that I = V/R = 2.6/47000 = 0.000055 A = 0.0055mA. That "seems" too little. Lets stick with 0.18mA needed. Or, can we assume that Gain of 100 @ 10mA means 46 @ 4.6mA? Then I(B) = 0.0046 / 46 = 0.0001. Then R = 2.6/ 0.0001 = 26,000 Ω. Are we splitting hairs? Anything less than 1mA isn't drawing too much current. What is at risk if we do not use enough resistance? Too little resistance and we fry the transistor? Or worse the raspberry pi. Too much resistance and the transistor does not operate. There is likely a range of acceptable current and as long as we are in that range, all will be fine. Sticking with 0.7V and 0.18mA. If we fry the transistor, they are super cheap, will replace and up the resistance. I suppose we could try the 47kΩ and see if the transistor will operate.
+* The GPIO pin puts out 3.3V
+* V = 3.3V - 0.7V = 2.6V
+* I = 0.00018 A - this is how little current will be taken from the GPIO pin to activate the transistor.
+* R = 2.6V / 0.00018A = 14444 Ω = 14.4kΩ. 
+
+Since what we have is 10kΩ and 4.7kΩ we can connect them in series to make 14.7kΩ which is certainly close enough to the target 14.4kΩ.
+
+REF: https://einhugur.com/blog/index.php/xojo-gpio/putting-the-gpio-pin-behind-transistor-to-get-more-current/
+
+## Parts
 
 Here are all the parts purchased for this project; some not yet arrived.
 
@@ -32,13 +62,13 @@ Here are all the parts purchased for this project; some not yet arrived.
 
 ## Temperature Sensing
 
-This was the first sub-project or the project; allert if the temperature is too high, i.e. above 95F. The pllan is to take immediate measures of toggling OFF grid power, in case the problem is too much AMPs going through the SSRs, which puts off heat. NOTE: the temperature sensor is inside the electrical box. Granted, if we switch to grid power at night, or on a cloudy day, we could run out of battery, especially considering it got toggled ON to grid power when reaching a low threshold, ie 65% DOD, so there isn't much left on the batteries anyway. Luckily the inverter will auto shutdown if the battery voltage drops below 49%.
+This was the first project and the very first thing I did with the raspberry pi. I need to get alerted if the temperature is too high, i.e. above 95F. I plan to take some immediate measures of toggling OFF grid power, in case the problem is too much AMPs going through the SSRs, which puts off heat. Maybe the fan inside the electric box failed? Granted, if I switch to grid power at night or on a cloudy day, I could run out of battery, especially considering it got toggled ON to grid power when reaching a low threshold, ie 65% DOD, so there isn't much left on the batteries anyway. Luckily the inverter will auto shutdown if the battery voltage drops below 49%.
 
 See [7_temperature](7_temperature/) for all the details. 
 
 ## Heartbeat monitorting
 
-In the last example, what if the scneario occurs where grid power is OFF and battery runs below 49% and inverter turns off and raspberry pi is therefore powered off? Since the raspberry pi is performing the monitoring, we need to know if it's not running! Hence heartbeat.
+In the last example, what if the scneario occurs where grid power is OFF and battery runs below 49% and inverter turns off and raspberry pi is therefore powered off? Since the raspberry pi is performing the monitoring, I need to know if it's not running! Hence heartbeat.
 
 The model is this: every 5 minutes the raspberry pi uploads a file to AWS S3. Then a Lambda is triggered every 5 minutes that checks the Last-Modified time stamp of that file. If the Last-Modified gets too old, i.e. 15 minutes, then trigger alert to PagerDuty.
 
@@ -48,7 +78,7 @@ See [heartbeat](heartbeat/) for all the details.
 
 This is so when viewing from external, ie cafe, the data is encrypted while in transit, especially grafana username/password!
 
-This examples uses port 30000, you can use any port you want. 30000 was for ease of remembering and not commonly used for something else.
+This examples uses port 30000, you can use any port you want. I just choose 30000 for ease of remembering and certainly not commonly used for something else.
 
 ```
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt
