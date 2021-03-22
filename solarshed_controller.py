@@ -4,6 +4,7 @@ from ssr.ssr import SSR
 import datetime
 import os.path
 import requests
+import socket
 import secrets
 
 
@@ -11,26 +12,48 @@ def is_sunny():
     now = datetime.datetime.now()
     print('now=' + str(now))
     weather = get_weather()
-    cloudiness = weather['clouds']['all']
-    print('cloudiness=' + str(cloudiness))
-    sunrise_ts = weather['sys']['sunrise']
-    sunrise = datetime.datetime.fromtimestamp(
-        sunrise_ts + secrets.sunrise_offset_minutes * 60)
-    print('adjusted sunrise=' + str(sunrise))
-    sunset_ts = weather['sys']['sunset']
-    sunset = datetime.datetime.fromtimestamp(
-        sunset_ts - secrets.sunset_offset_minutes * 60)
-    print('adjusted sunset=' + str(sunset))
-    after_sunrise_seconds = (now - sunrise).total_seconds()
-    print('after_sunrise_seconds=' + str(after_sunrise_seconds))
-    before_sunset_seconds = (sunset - now).total_seconds()
-    print('before_sunset_seconds=' + str(before_sunset_seconds))
-    if cloudiness < secrets.cloudiness_threshold and \
-            after_sunrise_seconds > 0 and before_sunset_seconds > 0:
-        print('SUNNY')
-        return True
+    if not weather:
+        print('No weather data, assume DARK')
+        send_graphite('solar.weatherapi.up', 0)
+        return False
     else:
-        print('DARK')
+        send_graphite('solar.weatherapi.up', 1)
+    try:
+        outside_temp_f = weather['main']['temp']
+        print('outside_temp_f=' + str(outside_temp_f))
+        send_graphite('solar.outside_temp_f', outside_temp_f)
+        humidity = weather['main']['humidity']
+        print('humidity=' + str(humidity))
+        send_graphite('solar.humidity', humidity)
+        wind_speed = weather['wind']['speed']
+        print('wind_speed=' + str(wind_speed))
+        send_graphite('solar.wind_speed', wind_speed)
+        cloudiness = weather['clouds']['all']
+        print('cloudiness=' + str(cloudiness))
+        send_graphite('solar.cloudiness', cloudiness)
+        sunrise_ts = weather['sys']['sunrise']
+        sunrise = datetime.datetime.fromtimestamp(
+            sunrise_ts + secrets.sunrise_offset_minutes * 60)
+        print('adjusted sunrise=' + str(sunrise))
+        sunset_ts = weather['sys']['sunset']
+        sunset = datetime.datetime.fromtimestamp(
+            sunset_ts - secrets.sunset_offset_minutes * 60)
+        print('adjusted sunset=' + str(sunset))
+        after_sunrise_seconds = (now - sunrise).total_seconds()
+        print('after_sunrise_seconds=' + str(after_sunrise_seconds))
+        before_sunset_seconds = (sunset - now).total_seconds()
+        print('before_sunset_seconds=' + str(before_sunset_seconds))
+        if cloudiness < secrets.cloudiness_threshold and \
+                after_sunrise_seconds > 0 and before_sunset_seconds > 0:
+            print('SUNNY')
+            send_graphite('solar.sunny', 1)
+            return True
+        else:
+            print('DARK')
+            send_graphite('solar.sunny', 0)
+            return False
+    except Exception as e:
+        print('Exception occurred in is_sunny, assume DARK: {}'.format(e))
         return False
 
 
@@ -44,9 +67,18 @@ def get_weather():
         resp = requests.get(url)
         data = resp.json()
     except Exception as e:
-        print('Critical error occurred getting weather, must exit')
-        raise e
+        print('Error occurred getting weather: {}'.format(e))
+        return None
     return data
+
+
+def send_graphite(name, value):
+    now = datetime.datetime.now()
+    msg = '{} {} {}\n'.format(
+        name, value, now.strftime('%s'))
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect(('127.0.0.1', 2003))
+        s.sendall(msg.encode('ascii'))
 
 
 def grid_mode_always():
