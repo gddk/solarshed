@@ -60,31 +60,24 @@ Here are all the parts purchased for this project; some not yet arrived.
 * [ALLDREI 0 Ω to 1 Mega Ohm Resistors Assortment Kit](https://www.amazon.com/gp/product/B07D433FZG/)
 * [MCIGICM 200pcs 2n3904 npn Transistor, 2n3904 Bipolar BJT Transistors NPN 40V 200mA 300MHz 625mW TO-92-3](https://www.amazon.com/gp/product/B06XRBLKDR/)
 
-## Temperature Sensing
+## Graphite and Grafana
 
-This was the first project and the very first thing I did with the raspberry pi. I need to get alerted if the temperature is too high, i.e. above 95F. I plan to take some immediate measures of toggling OFF grid power, in case the problem is too much AMPs going through the SSRs, which puts off heat. Maybe the fan inside the electric box failed? Granted, if I switch to grid power at night or on a cloudy day, I could run out of battery, especially considering it got toggled ON to grid power when reaching a low threshold, ie 65% DOD, so there isn't much left on the batteries anyway. Luckily the inverter will auto shutdown if the battery voltage drops below 49%.
-
-See [7_temperature](7_temperature/) for all the details. 
-
-## Heartbeat monitorting
-
-In the last example, what if the scneario occurs where grid power is OFF and battery runs below 49% and inverter turns off and raspberry pi is therefore powered off? Since the raspberry pi is performing the monitoring, I need to know if it's not running! Hence heartbeat.
-
-The model is this: every 5 minutes the raspberry pi uploads a file to AWS S3. Then a Lambda is triggered every 5 minutes that checks the Last-Modified time stamp of that file. If the Last-Modified gets too old, i.e. 15 minutes, then trigger alert to PagerDuty.
-
-See [heartbeat](heartbeat/) for all the details.
+Install [graphite](https://graphiteapp.org/), [grafana](https://grafana.com/), and [collectd](https://collectd.org/). Not explaining this in detail here.
 
 ## Make nginx https and proxy grafana
 
 This is so when viewing from external, ie cafe, the data is encrypted while in transit, especially grafana username/password!
 
-This examples uses port 30000, you can use any port you want. I just choose 30000 for ease of remembering and certainly not commonly used for something else.
+
+Here is how to make a self-signed SSL cert. You'll get cert warnings if you don't get it signed by an authority, but this is much much much better than not using SSL. Even with a self signed cert, all data will be encrypted while in transit.
 
 ```
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt
 ```
 
 REF: https://www.digitalocean.com/community/tutorials/how-to-create-a-self-signed-ssl-certificate-for-nginx-in-ubuntu-18-04
+
+This examples uses port 30000, you can use any port you want.
 
 /etc/nginx/sites-enabled/default
 
@@ -133,9 +126,32 @@ add_header X-Content-Type-Options nosniff;
 add_header X-XSS-Protection "1; mode=block";
 ```
 
+## Heartbeat monitorting
+
+In all of the monitoring we do with PagerDuty, the raspberry pi sends the alert to PagerDuty. What if the raspberry pi fails? For any reason, including loss of Internet access. Since the raspberry pi is performing the monitoring, we need to know if it's not running! Hence heartbeat.
+
+The model is this: every 5 minutes the raspberry pi uploads a file to AWS S3. Then a Lambda is triggered every 5 minutes that checks the Last-Modified time stamp of that file. If the Last-Modified gets too old, i.e. 15 minutes, then trigger alert to PagerDuty.
+
+See [heartbeat](heartbeat/) for all the details.
+
+## Temperature Sensing
+
+This was the first sub-project, because the part used, [SunFounder DS18B20 Temperature Sensor Module for Arduino and Raspberry Pi](https://www.amazon.com/gp/product/B013GB27HS/), arrived quickly and first. We need to get alerted if the temperature is too high, i.e. above 95F. The plan is to take immediate measures of toggling OFF grid power, in case the problem is too much current (AMPs) going through the SSRs and the heat not getting dispelled. This could be due to the fan failing. Granted, if we switch to grid power at night or on a cloudy day, we could run out of battery, especially considering it got toggled ON to grid power when reaching a low threshold, ie 65% DOD, so there isn't much left on the batteries anyway. Luckily the inverter will auto shutdown if the battery voltage drops below 49%.
+
+See [7_temperature](7_temperature/) for all the details of getting the temperature monitor sending data every minute to graphite.
+
+## Grafana alerting to PagerDuty
+
+To setup the alerting, with your PagerDuty account, go into the Services area, then the Service, then Integrations and "Add a new integration to this service". Copy the Integration key into Grafana. Then setup the alerts in the graphs like this.
+
+![Grafana PagerDuty Configuration](images/grafana-pagerduty.jpg "Grafana PagerDuty Configuration")
+
+![Grafana Alert If Temp Above 9](images/grafana-alert.jpg "Grafana Alert If Temp Above 95")
+
+
 ## SSR write state
 
-See [ssr/ssr_write_state.py](ssr/ssr_write_state.py)
+See [ssr/ssr_write_state.py](ssr/ssr_write_state.py) for the details on getting the SSR state to graphite so we can graph and monitor it in grafana.
 
 ## Grafana Dashboard
 
