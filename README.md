@@ -174,3 +174,22 @@ I am worried about toggling... i.e. the battery voltage drops below threshold tr
 
 The algorithm for decideing if SSR OFF (grid off, solar on) should be activated: It has been >X minutes since last SSR ON event AND it is sunny AND battery voltage > Y Volts. We can play with X and Y to find the most optimal values, start with 30 and 50.
 
+
+## Weather
+
+Weather is used to see if it's cloudy out or not. See [solarshed_controller.py](solarshed_controller.py) for the detail on how weather is looked up for our lat and long using [OpenWeather](https://openweathermap.org/) API. If it's cloudy, switch to grid ON. Go get a free account, or paid if you like, on [OpenWeather](https://openweathermap.org/)
+
+It does this, essentially,  like this:
+
+```
+curl "https://api.openweathermap.org/data/2.5/weather?lat=YOUR_LAT&lon=YOUR_LONG&appid=YOUR_API_KEY&units=imperial" | jq .
+```
+
+You need to 
+
+```
+pip install requests
+cp secrets.example.py secrets.py
+# configure secrets.py for your situation
+```
+

@@ -1,18 +1,53 @@
 #!/home/pi/venvs/rpi/bin/python
 
 from ssr.ssr import SSR
-import time
 import datetime
 import os.path
+import requests
+import secrets
 
 
 def is_sunny():
     now = datetime.datetime.now()
-    hour = int(now.strftime('%H'))
-    if hour >= 9 and hour <= 16:
+    print('now=' + str(now))
+    weather = get_weather()
+    cloudiness = weather['clouds']['all']
+    print('cloudiness=' + str(cloudiness))
+    sunrise_ts = weather['sys']['sunrise']
+    sunrise = datetime.datetime.fromtimestamp(
+        sunrise_ts + secrets.sunrise_offset_minutes * 60)
+    print('adjusted sunrise=' + str(sunrise))
+    sunset_ts = weather['sys']['sunset']
+    sunset = datetime.datetime.fromtimestamp(
+        sunset_ts - secrets.sunset_offset_minutes * 60)
+    print('adjusted sunset=' + str(sunset))
+    after_sunrise_seconds = (now - sunrise).total_seconds()
+    print('after_sunrise_seconds=' + str(after_sunrise_seconds))
+    before_sunset_seconds = (sunset - now).total_seconds()
+    print('before_sunset_seconds=' + str(before_sunset_seconds))
+    if cloudiness < secrets.cloudiness_threshold and \
+            after_sunrise_seconds > 0 and before_sunset_seconds > 0:
+        print('SUNNY')
         return True
     else:
+        print('DARK')
         return False
+
+
+def get_weather():
+    url = 'https://api.openweathermap.org/data/2.5/weather'
+    url += '?lat={}&lon={}&units=imperial&appid={}'.format(
+        secrets.openweather_lat, secrets.openweather_lon,
+        secrets.openweather_api_key)
+    data = {}
+    try:
+        resp = requests.get(url)
+        data = resp.json()
+    except Exception as e:
+        print('Critical error occurred getting weather, must exit')
+        raise e
+    return data
+
 
 def grid_mode_always():
     if os.path.isfile('/home/pi/code/rpi/gridmode'):
@@ -22,9 +57,11 @@ def grid_mode_always():
                 return True
     return False
 
+
 def get_battery_voltage():
     # todo: fetch the real voltage
     return 52.1
+
 
 def main():
     ssr1 = SSR(17)
@@ -56,6 +93,7 @@ def main():
         note,
         grid_mode
     ))
+
 
 if __name__ == '__main__':
     main()
