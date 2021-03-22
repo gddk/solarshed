@@ -5,6 +5,7 @@ import datetime
 import os.path
 import requests
 import socket
+import json
 import secrets
 
 
@@ -67,9 +68,27 @@ def get_weather():
         resp = requests.get(url)
         data = resp.json()
     except Exception as e:
-        print('Error occurred getting weather: {}'.format(e))
-        return None
-    return data
+        print('WARNING: Exception occurred getting weather: {}'.format(e))
+
+    if data.get('clouds', None) is not None:
+        with open('/tmp/weather.last.json', 'w') as fp:
+            fp.write(json.dumps(data))
+        return data
+    else:
+        print('WARNING: no weather data available, checking if cache is good')
+        if os.path.isfile('/tmp/weather.last.json'):
+            now = datetime.datetime.now()
+            last_mod_ago = (now - datetime.datetime.fromtimestamp(
+                os.path.getmtime('/tmp/weather.last.json'))).total_seconds()
+            raw = None
+            if last_mod_ago < 30 * 60:
+                with open('/tmp/weather.last.json', 'r') as fp:
+                    raw = fp.read()
+            if raw:
+                data = json.loads(raw)
+                print('WARNING: using /tmp/weather.last.json cache')
+                return data
+    return None
 
 
 def send_graphite(name, value):
