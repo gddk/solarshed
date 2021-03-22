@@ -7,9 +7,9 @@ import os.path
 
 
 def is_sunny():
-    now = datetime.datetime.now(datetime.timezone.utc)
+    now = datetime.datetime.now()
     hour = int(now.strftime('%H'))
-    if hour > 15 and hour < 23:
+    if hour >= 9 and hour <= 16:
         return True
     else:
         return False
