@@ -193,10 +193,8 @@ cp secrets.example.py secrets.py
 # configure secrets.py for your situation
 ```
 
-## Grafana Dashboard 2021-03-21 Part II
+## Grafana Dashboard 2021-03-23
 
-Here is the dashboard view so far as of 2021-03-21, again, this time after weather added
-
-![2021-03-21 Solar Shed Dashboard II](images/2021-03-21-dashboard2.jpg "2021-03-21 Solar Shed Dashboard II")
+Here is the dashboard view so far as of 2021-03-23, this time after weather added
 
 ![2021-03-23 Solar Shed Dashboard](images/2021-03-23-dashboard.jpg "2021-03-23 Solar Shed Dashboard")
