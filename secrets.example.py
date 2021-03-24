@@ -11,4 +11,4 @@ sunrise_offset_minutes = 120
 sunset_offset_minutes = 90
 
 # 50 means if it's >=50% cloudy then it's not sunny
-cloudiness_threshold = 50
+cloudiness_threshold = 25
