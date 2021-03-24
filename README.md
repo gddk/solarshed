@@ -13,6 +13,8 @@ It also monitors health stats and does alerting, through PagerDuty [PageDuty](ht
 
 ![Raspberry Pi Controlling SSR Inside](images/ssr_inside_box.jpg "Raspberry Pi Controlling SSR Inside")
 
+![2021-03-23 Solar Shed Dashboard](images/2021-03-23-dashboard.jpg "2021-03-23 Solar Shed Dashboard")
+
 2021-03-20 Note: The SSRs didn't work at first when connected to GPIO. The LED came on and detected 120V on both sides of the SSR, but the inverter wouldn't accept it. Reviews of the SSR stated raspberry pi GPIO pushes enough current to light up the LED and make about half of the AC current flow, but to make it actually work, have to connect it to the 5V power supply. The current used at 3.6VDC is 6.4mA, which is more than GPIO can push. At 5VDC it'll be closer to 5mA. 
 
 Solution:  5V -- (SSR) > -- (collector,2n3904 npn Transistor,emmitter) -- GND. Then the GPIO -- 10kΩ -- 4.7kΩ --  (base,2n3904 npn Transistor).
@@ -153,12 +155,6 @@ To setup the alerting, with your PagerDuty account, go into the Services area, t
 
 See [ssr/ssr_write_state.py](ssr/ssr_write_state.py) for the details on getting the SSR state to graphite so we can graph and monitor it in grafana.
 
-## Grafana Dashboard
-
-Here is the dashboard view so far as of 2021-03-21. Will update as this advances. 
-
-![2021-03-21 Solar Shed Dashboard](images/2021-03-21-dashboard.png "2021-03-21 Solar Shed Dashboard")
-
 ## Get MATE2 stats over DB9 RS232 Serial Cable
 
 2021-03-21 NOTE: The hardware has not arrived yet. This is the next sub-project to do.
@@ -193,8 +189,3 @@ cp secrets.example.py secrets.py
 # configure secrets.py for your situation
 ```
 
-## Grafana Dashboard 2021-03-21 Part II
-
-Here is the dashboard view so far as of 2021-03-21, again, this time after weather added
-
-![2021-03-21 Solar Shed Dashboard II](images/2021-03-21-dashboard2.jpg "2021-03-21 Solar Shed Dashboard II")
