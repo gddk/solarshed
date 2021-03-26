@@ -73,23 +73,31 @@ def get_weather():
         print('WARNING: Exception occurred getting weather: {}'.format(e))
 
     if data.get('clouds', None) is not None:
-        with open('/tmp/weather.last.json', 'w') as fp:
-            fp.write(json.dumps(data))
+        write_json_cache('/tmp/weather.last.json', data)
         return data
     else:
         print('WARNING: no weather data available, checking if cache is good')
-        if os.path.isfile('/tmp/weather.last.json'):
-            now = datetime.datetime.now()
-            last_mod_ago = (now - datetime.datetime.fromtimestamp(
-                os.path.getmtime('/tmp/weather.last.json'))).total_seconds()
-            raw = None
-            if last_mod_ago < 30 * 60:
-                with open('/tmp/weather.last.json', 'r') as fp:
-                    raw = fp.read()
-            if raw:
-                data = json.loads(raw)
-                print('WARNING: using /tmp/weather.last.json cache')
-                return data
+        return get_json_cache('/tmp/weather.last.json', 30)
+
+
+def write_json_cache(file, data):
+    with open(file, 'w') as fp:
+        fp.write(json.dumps(data))
+
+
+def get_json_cache(file, if_minutes):
+    if os.path.isfile(file):
+        now = datetime.datetime.now()
+        last_mod_ago = (now - datetime.datetime.fromtimestamp(
+            os.path.getmtime(file))).total_seconds()
+        raw = None
+        if last_mod_ago < if_minutes * 60:
+            with open(file, 'r') as fp:
+                raw = fp.read()
+        if raw:
+            data = json.loads(raw)
+            print('WARNING: using {}'.format(file))
+            return data
     return None
 
 
@@ -132,6 +140,15 @@ def main():
         mate2 = get_mate2_status()
     except Exception as e:
         print('Exception occurred in get_mate2_status() :{}'.format(e))
+    if mate2.get('battery_voltage', None) is not None:
+        write_json_cache('/tmp/mate2.last.json', mate2)
+    else:
+        print('WARNING: no mate2 data available, checking if cache is good')
+        mate2 = get_json_cache('/tmp/mate2.last.json', 10)
+
+    if not mate2:
+        mate2 = {}
+
     print('mate2=' + json.dumps(mate2))
     if mate2.get('battery_voltage'):
         send_graphite('solar.battery_voltage', mate2['battery_voltage'])

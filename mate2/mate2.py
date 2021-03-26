@@ -19,7 +19,12 @@ class Mate2:
         self.readbytes = readbytes
 
     def getStatus(self, format='code'):
-        raw = self._getStatusRaw().decode('ascii')
+        raw = ''
+        try:
+            raw = self._getStatusRaw()
+        except:
+            print('mate2.getStatus exception, retry')
+            raw = self._getStatusRaw()
         stats = {
             'battery_voltage': float(raw[33:36]) / 10.0,
             'charger_current': int(raw[6:8]),
@@ -40,7 +45,15 @@ class Mate2:
             timeout=self.timeout)
         port.setRTS(self.rts)
         port.setDTR(self.dtr)
-        return port.read(self.readbytes)
+        line = port.read(self.readbytes).decode('ascii')
+        # good:
+        # C,00,00,00,030,004,00,03,000,00,525,0008,00,049
+        # bad:
+        # C,00,04,00,03,000,00,525,0008,00,0490008,00,050
+        if line[14] == ',':
+            print('got bad line _getStatusRaw, retry')
+            line = port.read(self.readbytes).decode('ascii')
+        return line
 
 
 if __name__ == '__main__':
