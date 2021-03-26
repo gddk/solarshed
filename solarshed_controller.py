@@ -102,7 +102,7 @@ def get_json_cache(file, if_minutes):
 
 
 def get_mate2_status():
-    return Mate2().getStatus()
+    return Mate2(expected_devices=secrets.mate2_devices).getStatus()
 
 
 def send_graphite(name, value):

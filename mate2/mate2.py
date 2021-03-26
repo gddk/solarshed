@@ -7,7 +7,7 @@ class Mate2:
     def __init__(self, device='/dev/ttyUSB0', baudrate=19200,
                  parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE,
                  bytesize=serial.EIGHTBITS, timeout=2, rts=False, dtr=True,
-                 readbytes=98):
+                 expected_devices=2):
         self.device = device
         self.baudrate = baudrate
         self.parity = parity
@@ -16,7 +16,7 @@ class Mate2:
         self.timeout = timeout
         self.rts = rts
         self.dtr = dtr
-        self.readbytes = readbytes
+        self.readbytes = expected_devices * 49
 
     def getStatus(self, format='code'):
         raw = ''
