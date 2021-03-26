@@ -1,4 +1,5 @@
 import serial
+import json
 
 class Mate2:
 
@@ -16,8 +17,17 @@ class Mate2:
         self.dtr = dtr
         self.readbytes = readbytes
 
-    def getStatus(self):
-        return self._getStatusRaw()
+    def getStatus(self, format='code'):
+        raw = self._getStatusRaw().decode('ascii')
+        stats = {
+            'battery_voltage': float(raw[33:36]) / 10.0,
+            'charger_current': int(raw[6:8]),
+            'ac_input_voltage': int(raw[12:15]),
+            'ac_output_voltage': int(raw[16:19])
+        }
+        if format == 'json':
+            return json.dumps(stats)
+        return stats
 
     def _getStatusRaw(self):
         port = serial.Serial(
@@ -33,4 +43,4 @@ class Mate2:
 
 
 if __name__ == '__main__':
-    print(Mate2().getStatus())
+    print(Mate2().getStatus(format='json'))
