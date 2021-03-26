@@ -1,6 +1,7 @@
 import serial
 import json
 
+
 class Mate2:
 
     def __init__(self, device='/dev/ttyUSB0', baudrate=19200,

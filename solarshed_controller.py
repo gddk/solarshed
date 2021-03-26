@@ -7,6 +7,8 @@ import requests
 import socket
 import json
 import secrets
+from mate2.mate2 import Mate2
+from temperature.temperature import Temperature
 
 
 def is_sunny():
@@ -91,6 +93,10 @@ def get_weather():
     return None
 
 
+def get_mate2_status():
+    return Mate2().getStatus()
+
+
 def send_graphite(name, value):
     now = datetime.datetime.now()
     msg = '{} {} {}\n'.format(
@@ -109,11 +115,6 @@ def grid_mode_always():
     return False
 
 
-def get_battery_voltage():
-    # todo: fetch the real voltage
-    return 52.1
-
-
 def main():
     ssr1 = SSR(17)
     ssr2 = SSR(27)
@@ -121,22 +122,43 @@ def main():
     grid_mode = grid_mode_always()
     grid_on = True if ssr1.state and ssr2.state else False
     sunny = is_sunny()
-    bvolts = get_battery_voltage()
+    t = Temperature()
+    send_graphite('solar.temp_f', t.F)
+    print('temp_f={}'.format(t.F))
+    send_graphite('solar.temp_c', t.C)
+    print('temp_c={}'.format(t.C))
+    mate2 = {}
+    try:
+        mate2 = get_mate2_status()
+    except Exception as e:
+        print('Exception occurred in get_mate2_status() :{}'.format(e))
+    print('mate2=' + json.dumps(mate2))
+    if mate2.get('battery_voltage'):
+        send_graphite('solar.battery_voltage', mate2['battery_voltage'])
+    if mate2.get('charger_current'):
+        send_graphite('solar.charger_current', mate2['charger_current'])
+    if mate2.get('ac_input_voltage'):
+        send_graphite('solar.ac_input_voltage', mate2['ac_input_voltage'])
+    if mate2.get('ac_output_voltage'):
+        send_graphite('solar.ac_output_voltage', mate2['ac_output_voltage'])
+    bvolts = mate2.get('battery_voltage', 48.0)
     note = 'no change'
     if not grid_on and (grid_mode or
                         not sunny or
-                        bvolts < 50.1
+                        bvolts < 50.0
                         ):
         ssr1.on()
         ssr2.on()
         note = 'toggled ON'
         grid_on = True
-    elif grid_on and sunny and not grid_mode and bvolts >= 50.1:
+    elif grid_on and sunny and not grid_mode and bvolts >= 50.0:
         ssr1.off()
         ssr2.off()
         note = 'toggled OFF'
         grid_on = False
 
+    send_graphite('solar.ssr1.state', ssr1.state)
+    send_graphite('solar.ssr2.state', ssr2.state)
     print('{} ssr1: {} ssr2: {} {} grid_mode: {}'.format(
         now.strftime('%Y-%m-%dT%H:%M:%S%z'),
         ssr1.state,

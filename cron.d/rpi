@@ -1,4 +1,2 @@
-* * * * * pi /home/pi/code/rpi/7_temperature/7_temperature_pure_bash.sh > /tmp/7_temperature.last.log
 */5 * * * * pi BUCKET=solarshed /home/pi/code/rpi/heartbeat/heartbeat.sh >/tmp/heartbeat.last.log 2>&1
 * * * * * pi /home/pi/code/rpi/solarshed_controller.py > /tmp/solarshed_controller.last.log 2>&1
-* * * * * pi /home/pi/code/rpi/ssr/ssr_write_state.py > /dev/null 2>&1
