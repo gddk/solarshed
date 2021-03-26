@@ -140,7 +140,7 @@ def main():
         mate2 = get_mate2_status()
     except Exception as e:
         print('Exception occurred in get_mate2_status() :{}'.format(e))
-    if mate2.get('battery_voltage', None) is not None:
+    if mate2.get('C', {}).get('battery_voltage', None) is not None:
         write_json_cache('/tmp/mate2.last.json', mate2)
     else:
         print('WARNING: no mate2 data available, checking if cache is good')
@@ -150,15 +150,29 @@ def main():
         mate2 = {}
 
     print('mate2=' + json.dumps(mate2))
-    if mate2.get('battery_voltage'):
-        send_graphite('solar.battery_voltage', mate2['battery_voltage'])
-    if mate2.get('charger_current'):
-        send_graphite('solar.charger_current', mate2['charger_current'])
-    if mate2.get('ac_input_voltage'):
-        send_graphite('solar.ac_input_voltage', mate2['ac_input_voltage'])
-    if mate2.get('ac_output_voltage'):
-        send_graphite('solar.ac_output_voltage', mate2['ac_output_voltage'])
-    bvolts = mate2.get('battery_voltage', 48.0)
+    bvolts = 0.0
+    bvolts_counter = 0
+    for key in mate2.keys():
+        m = mate2[key]
+        if m.get('battery_voltage'):
+            send_graphite('solar.{}.battery_voltage'.format(key),
+                          m['battery_voltage'])
+        if m.get('charger_current'):
+            send_graphite('solar.{}.charger_current'.format(key),
+                          m['charger_current'])
+        if m.get('ac_input_voltage'):
+            send_graphite('solar.{}.ac_input_voltage'.format(key),
+                          m['ac_input_voltage'])
+        if m.get('ac_output_voltage'):
+            send_graphite('solar.{}.ac_output_voltage'.format(key),
+                          m['ac_output_voltage'])
+        if m.get('battery_voltage'):
+            bvolts_counter += 1
+            bvolts = round(
+                (bvolts + m['battery_voltage']) / bvolts_counter, 2)
+    bvolts = round(bvolts, 1)
+    print('bvolts={}'.format(bvolts))
+    send_graphite('solar.bvolts', bvolts)
     note = 'no change'
     if not grid_on and (grid_mode or
                         not sunny or

@@ -7,7 +7,7 @@ class Mate2:
     def __init__(self, device='/dev/ttyUSB0', baudrate=19200,
                  parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE,
                  bytesize=serial.EIGHTBITS, timeout=2, rts=False, dtr=True,
-                 readbytes=48):
+                 readbytes=98):
         self.device = device
         self.baudrate = baudrate
         self.parity = parity
@@ -20,20 +20,27 @@ class Mate2:
 
     def getStatus(self, format='code'):
         raw = ''
+        status = {}
         try:
             raw = self._getStatusRaw()
-        except:
+        except Exception:
             print('mate2.getStatus exception, retry')
             raw = self._getStatusRaw()
-        stats = {
-            'battery_voltage': float(raw[33:36]) / 10.0,
-            'charger_current': int(raw[6:8]),
-            'ac_input_voltage': int(raw[12:15]),
-            'ac_output_voltage': int(raw[16:19])
-        }
+        lines = raw.split('\r')
+        print('lines={}'.format(lines))
+        for line in lines:
+            if len(line) < 48:
+                continue
+            print('line={}'.format(line))
+            status[str(line[1:2])] = {
+                'battery_voltage': float(line[33:36]) / 10.0,
+                'charger_current': int(line[6:8]),
+                'ac_input_voltage': int(line[12:15]),
+                'ac_output_voltage': int(line[16:19])
+            }
         if format == 'json':
-            return json.dumps(stats)
-        return stats
+            return json.dumps(status)
+        return status
 
     def _getStatusRaw(self):
         port = serial.Serial(
