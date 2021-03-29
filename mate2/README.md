@@ -71,85 +71,72 @@ Mate Code Revs. of 4.00 and greater
 
 > The status page the Mate emits for each MX connected is 49 Bytes long. Referring to the Figure 9 the byte definitions are as follows:
 
-b'\nC,4:00,7:00,10:00,13:029,17:004,21:00,24:03,27:000,31:00,34:527,38:0008,00,059'
+b'\nC,00,27,15,107,005,08,03,000,01,562,0009,00,081\r'
 
 1. ASCII (10) New Line character denoting the start of the status page.
-2. This is the Inverter address.
-
+2. MX/FM address.
 3. ASCII (44) a comma as a data separator.
-
-4. Tens digit of Inverter current.
-5. Ones digit of Inverter current.
-
-6. ASCII (44) a comma as a data separator.
-
-7. Tens digit of Charger current..
-8. Ones digit of Charger current.
-
-9. ASCII (44) a comma as a data separator.
-
-10. Tens digit of Buy current..
-11. Ones digit of Buy current.
-
-12. ASCII (44) a comma as a data separator.
-
-13. Hundreds digit of the AC input voltage.
-14. Tens digit of AC input voltage.
-15. Ones digit of AC input voltage.
-
-16. ASCII (44) a comma as a data separator.
-
-17. Hundreds digit of the AC output voltage.
-18. Tens digit of AC output voltage.
-19. Ones digit of AC output voltage.
-
-20. ASCII (44) a comma as a data separator.
-
-21. Tens digit of Sell current.
-22. Ones digit of Sell current.
-
-23. ASCII (44) a comma as a data separator.
-
-24. Tens digit of FX operating mode.
-25. Ones digit of FX operating mode.
-
-26. ASCII (44) a comma as a data separator.
-
-27. High byte of FX Error mode.
-28. Middle byte of FX Error mode.
-29. Low byte of FX Error mode.
-
-30. ASCII (44) a comma as a data separator.
-
-31. High byte of FX AC mode.
-32. Low byte of FX AC mode
-
-33. ASCII (44) a comma as a data separator.
-
-34. Tens digit of FX battery voltage.
-35. Ones digit of FX battery voltage.
-36. Tenths digit of FX battery voltage.
-
-37. ASCII (44) a comma as a data separator.
-
-38. High byte of FX Misc.
-39. Middle byte of FX Misc.
-40. Low byte of FX Misc.
-
-41. ASCII (44) a comma as a data separator.
-
-42. High byte of FX Warning mode.
-43. Middle byte of FX Warning mode.
-44. Low byte of FX Warning mode.
-
-45. ASCII (44) a comma as a data separator.
-
-46. Hundreds digit of Chksum.
-47. Tens digit of Chksum.
-48. Ones digit of Chksum.
+4. Unused, ASCII (48).
+5. Unused, ASCII (48). 
+6. ASCII (44) a comma as a data separator. 
+7. Tens digit of Charger current. 
+8. Ones digit of Charger current. 
+9. ASCII (44) a comma as a data separator. 
+10. Tens digit of PV current. 
+11. Ones digit of PV current. 
+12. ASCII (44) a comma as a data separator. 
+13. Hundreds digit of the PV input voltage. 
+14. Tens digit of PV input voltage. 
+15. Ones digit of PV input voltage. 
+16. ASCII (44) a comma as a data separator. 
+17. Tens digit of Daily kWH. 
+18. Ones digit of Daily kWH. 
+19. Tenths digit of Daily kWH. 
+20. ASCII (44) a comma as a data separator. 
+21. Unused, ASCII (48). 
+22. Tenths of amp Charger current (FM80 / FM60 only) 
+23. ASCII (44) a comma as a data separator. 
+24. High byte of Aux mode. 
+25. Low byte of Aux mode. 
+26. ASCII (44) a comma as a data separator. 
+27. High byte of Error mode. 
+28. Middle byte of Error mode. 
+29. Low byte of Error mode. 
+30. ASCII (44) a comma as a data separator. 
+31. High byte of charger mode. 
+32. Low byte of charger mode. 
+33. ASCII (44) a comma as a data separator
+34. Tens digit of battery voltage. 
+35. Ones digit of battery voltage. 
+36. Tenths digit of battery voltage. 
+37. ASCII (44) a comma as a data separator. 
+38. Thousands digit of daily AH. 
+39. Hundreds digit of daily AH. 
+40. Tens digit of daily AH. 
+41. Ones digit of daily AH. 
+42. ASCII (44) a comma as a data separator. 
+43. Unused, ASCII (48). 
+44. Unused, ASCII (48). 
+45. ASCII (44) a comma as a data separator. 
+46. Hundredths digit of Chksum. 
+47. Tens digit of Chksum. 
+48. Ones digit of Chksum. 
 49. ASCII (13) carriage return. Denotes end of status page.
 
-It also says:
+
+Taking this ^ information to translate into a dict like this:
+
+```
+status[str(line[1:2])] = {
+                'battery_voltage': float(line[33:36]) / 10.0,
+                'charger_current': float(line[6:8] + line[21:22]) / 10.0,
+                'pv_input_voltage': int(line[12:15]),
+                'daily_kwh': float(line[16:19]) / 10.0
+                'daily_amph': float(line[37:41])
+            }
+```
+
+The comm manual PDF also says:
 
 > In addition to a LCD and buttons for display and control, an OutBack Mate provides an isolated RS232 port for PC communication in the form of a female DB9 connector, running at a baud rate of 19200, 8 bits, no parity, 1 stop bit. The Mates’ serial port is optically isolated from the rest of the OutBack products it is connected too. This isolation requires that the Mate ‘steals’ power from the PC in order to communicate. Figure 2 shows which lines of a standard PCs serial port are used. All pin numbers and names are referenced from the PC.
 
@@ -159,18 +146,15 @@ This is all critical information to get communication to work
 
 [CableCreation 6.6 Feet USB to RS232 Adapter with PL2303 Chipset, Gold Plated USB 2.0 to DB9 Serial Converter Cable Support Cashier Register, Modem, Scanner, Digital Cameras,CNC etc, 2M /Black ](https://www.amazon.com/gp/product/B0758BWVXF/)
 
+## Reading MATE2 with miniterm
+
 ```
-miniterm --dtr 1 --rts 0 --encoding ascii --raw /dev/ttyUSB0 19200
+ miniterm --dtr 1 --rts 0 --encoding ascii --raw /dev/ttyUSB0 19200
 --- forcing DTR active
 --- forcing RTS inactive
 --- Miniterm on /dev/ttyUSB0  19200,8,N,1 ---
 --- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H ---
 
-C,00,00,00,029,004,00,03,000,00,529,0008,00,061
-C,00,00,00,029,004,00,03,000,00,529,0008,00,061
-C,00,00,00,029,004,00,03,000,00,529,0008,00,061
-C,00,00,00,029,004,00,03,000,00,529,0008,00,061
-C,00,00,00,029,004,00,03,000,00,529,0008,00,061
-C,00,00,00,029,004,00,03,000,00,529,0008,00,061
-
+C,00,33,17,111,011,01,03,000,02,544,0019,00,067
+C,00,33,16,111,011,01,03,000,02,544,0019,00,066
 ```

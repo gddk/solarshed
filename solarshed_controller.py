@@ -154,19 +154,22 @@ def main():
     bvolts_counter = 0
     for key in mate2.keys():
         m = mate2[key]
-        if m.get('battery_voltage'):
+        if m.get('battery_voltage', None) is not None:
             send_graphite('solar.{}.battery_voltage'.format(key),
                           m['battery_voltage'])
-        if m.get('charger_current'):
+        if m.get('charger_current', None) is not None:
             send_graphite('solar.{}.charger_current'.format(key),
                           m['charger_current'])
-        if m.get('ac_input_voltage'):
-            send_graphite('solar.{}.ac_input_voltage'.format(key),
-                          m['ac_input_voltage'])
-        if m.get('ac_output_voltage'):
-            send_graphite('solar.{}.ac_output_voltage'.format(key),
-                          m['ac_output_voltage'])
-        if m.get('battery_voltage'):
+        if m.get('pv_input_voltage', None is not None):
+            send_graphite('solar.{}.pv_input_voltage'.format(key),
+                          m['pv_input_voltage'])
+        if m.get('daily_kwh', None) is not None:
+            send_graphite('solar.{}.daily_kwh'.format(key),
+                          m['daily_kwh'])
+        if m.get('daily_amph', None) is not None:
+            send_graphite('solar.{}.daily_amph'.format(key),
+                          m['daily_amph'])
+        if m.get('battery_voltage', None) is not None:
             bvolts_counter += 1
             bvolts = round(
                 (bvolts + m['battery_voltage']) / bvolts_counter, 2)
