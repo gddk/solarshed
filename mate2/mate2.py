@@ -31,7 +31,6 @@ class Mate2:
         for line in lines:
             if len(line) < 48:
                 continue
-            print('line={}'.format(line))
             status[str(line[1:2])] = {
                 'battery_voltage': float(line[33:36]) / 10.0,
                 'charger_current': float(line[6:8] + line[21:22]) / 10.0,
