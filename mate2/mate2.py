@@ -36,7 +36,7 @@ class Mate2:
                 'battery_voltage': float(line[33:36]) / 10.0,
                 'charger_current': float(line[6:8] + line[21:22]) / 10.0,
                 'pv_input_voltage': int(line[12:15]),
-                'daily_kwh': float(line[16:19]) / 10.0
+                'daily_kwh': float(line[16:19]) / 10.0,
                 'daily_amph': float(line[37:41])
             }
         if format == 'json':
