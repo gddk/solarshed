@@ -11,3 +11,6 @@ cloudiness_threshold = 25
 
 # This is how many devices you have connected to the mate2
 mate2_devices = 2
+
+# If the battery voltage drops below this, toggle grid on
+low_bvolts = 49.9
