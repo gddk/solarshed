@@ -20,18 +20,18 @@ class Mate2:
 
     def getStatus(self, format='code'):
         raw = ''
-        status = {}
+        status = {'devices': {}}
         try:
             raw = self._getStatusRaw()
         except Exception:
-            print('mate2.getStatus exception, retry')
+            status['warning'] = 'mate2.getStatus exception, retry'
             raw = self._getStatusRaw()
         lines = raw.split('\r')
-        print('lines={}'.format(lines))
+        status['lines'] = '{}'.format(lines)
         for line in lines:
             if len(line) < 48:
                 continue
-            status[str(line[1:2])] = {
+            status['devices'][str(line[1:2])] = {
                 'battery_voltage': float(line[33:36]) / 10.0,
                 'charger_current': float(line[6:8] + line[21:22]) / 10.0,
                 'pv_input_voltage': int(line[12:15]),
@@ -58,7 +58,6 @@ class Mate2:
         # bad:
         # C,00,04,00,03,000,00,525,0008,00,0490008,00,050
         if line[14] == ',':
-            print('got bad line _getStatusRaw, retry')
             line = port.read(self.readbytes).decode('ascii')
         return line
 

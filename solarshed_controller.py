@@ -140,7 +140,8 @@ def main():
         mate2 = get_mate2_status()
     except Exception as e:
         print('Exception occurred in get_mate2_status() :{}'.format(e))
-    if mate2.get('C', {}).get('battery_voltage', None) is not None:
+    if mate2.get('devices', {}).get('B', {}).get(
+        'battery_voltage', None) is not None:
         write_json_cache('/tmp/mate2.last.json', mate2)
     else:
         print('WARNING: no mate2 data available, checking if cache is good')
@@ -152,8 +153,8 @@ def main():
     print('mate2=' + json.dumps(mate2))
     bvolts = 0.0
     bvolts_counter = 0
-    for key in mate2.keys():
-        m = mate2[key]
+    for key in mate2.get('devices', {}).keys():
+        m = mate2['devices'][key]
         if m.get('battery_voltage', None) is not None:
             send_graphite('solar.{}.battery_voltage'.format(key),
                           m['battery_voltage'])
@@ -179,13 +180,13 @@ def main():
     note = 'no change'
     if not grid_on and (grid_mode or
                         not sunny or
-                        bvolts < 50.0
+                        bvolts < secrets.low_bvolts
                         ):
         ssr1.on()
         ssr2.on()
         note = 'toggled ON'
         grid_on = True
-    elif grid_on and sunny and not grid_mode and bvolts >= 50.0:
+    elif grid_on and sunny and not grid_mode and bvolts >= secrets.low_bvolts:
         ssr1.off()
         ssr2.off()
         note = 'toggled OFF'
