@@ -6,8 +6,10 @@ openweather_lon = 'your_lon'
 sunrise_offset_minutes = 120
 sunset_offset_minutes = 90
 
-# 50 means if it's >=50% cloudy then it's not sunny
-cloudiness_threshold = 25
+# 60 means if it's >60% cloudy then it's not sunny
+# Set to 101 to make cloudiness not a factor. This could be useful
+# if you just want to make low_bvolts be the primary factor
+cloudiness_threshold = 75
 
 # This is how many devices you have connected to the mate2
 mate2_devices = 2
