@@ -9,12 +9,16 @@ import json
 import secrets
 from mate2.mate2 import Mate2
 from temperature.temperature import Temperature
+from weather import Weather
+from json_cache import write_json_cache, get_json_cache
 
 
 def is_sunny():
     now = datetime.datetime.now()
     print('now=' + str(now))
-    weather = get_weather()
+    w = Weather(secrets.openweather_api_key, secrets.openweather_lat,
+                secrets.openweather_lon)
+    weather = w.get_weather()
     if not weather:
         print('No weather data, assume DARK')
         send_graphite('solar.weatherapi.up', 0)
@@ -58,47 +62,6 @@ def is_sunny():
     except Exception as e:
         print('Exception occurred in is_sunny, assume DARK: {}'.format(e))
         return False
-
-
-def get_weather():
-    url = 'https://api.openweathermap.org/data/2.5/weather'
-    url += '?lat={}&lon={}&units=imperial&appid={}'.format(
-        secrets.openweather_lat, secrets.openweather_lon,
-        secrets.openweather_api_key)
-    data = {}
-    try:
-        resp = requests.get(url)
-        data = resp.json()
-    except Exception as e:
-        print('WARNING: Exception occurred getting weather: {}'.format(e))
-
-    if data.get('clouds', None) is not None:
-        write_json_cache('/tmp/weather.last.json', data)
-        return data
-    else:
-        print('WARNING: no weather data available, checking if cache is good')
-        return get_json_cache('/tmp/weather.last.json', 30)
-
-
-def write_json_cache(file, data):
-    with open(file, 'w') as fp:
-        fp.write(json.dumps(data))
-
-
-def get_json_cache(file, if_minutes):
-    if os.path.isfile(file):
-        now = datetime.datetime.now()
-        last_mod_ago = (now - datetime.datetime.fromtimestamp(
-            os.path.getmtime(file))).total_seconds()
-        raw = None
-        if last_mod_ago < if_minutes * 60:
-            with open(file, 'r') as fp:
-                raw = fp.read()
-        if raw:
-            data = json.loads(raw)
-            print('WARNING: using {}'.format(file))
-            return data
-    return None
 
 
 def get_mate2_status():
