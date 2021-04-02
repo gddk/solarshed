@@ -199,3 +199,65 @@ Example of mess ups occurrsing
 2021-03-25 07:15:06 solar.temp_f 50.10 solar.temp_c 10.06  now=2021-03-25 07:15:01.525533 outside_temp_f=36.5 humidity=41 wind_speed=8.05 cloudiness=1 adjusted sunrise=2021-03-25 08:56:14 adjusted sunset=2021-03-25 17:15:29 after_sunrise_seconds=-6072.474467 before_sunset_seconds=36027.474467 DARK 2021-03-25T14:15:01+0000 ssr1: 1 ssr2: 1 no change grid_mode: False
 2021-03-25 07:10:07 solar.temp_f 50.10 solar.temp_c 10.06 
 ```
+
+## weather.py
+
+Code usage:
+```
+import secrets
+
+
+w = Weather(secrets.openweather_api_key, secrets.openweather_lat,
+            secrets.openweather_lon)
+weather = w.get_weather()
+```
+
+Command line usage:
+```
+python weather.py | jq
+{
+  "coord": {
+    "lon": "SNIP",
+    "lat": "SNIP"
+  },
+  "weather": [
+    {
+      "id": 800,
+      "main": "Clear",
+      "description": "clear sky",
+      "icon": "01n"
+    }
+  ],
+  "base": "stations",
+  "main": {
+    "temp": 52.9,
+    "feels_like": 51.22,
+    "temp_min": 51.01,
+    "temp_max": 55.99,
+    "pressure": 1019,
+    "humidity": 71
+  },
+  "visibility": 10000,
+  "wind": {
+    "speed": 6.04,
+    "deg": 22,
+    "gust": 7.11
+  },
+  "clouds": {
+    "all": 1
+  },
+  "dt": 1617369123,
+  "sys": {
+    "type": 1,
+    "id": 5403,
+    "country": "US",
+    "sunrise": 1617369304,
+    "sunset": 1617414700
+  },
+  "timezone": -25200,
+  "id": "SNIP",
+  "name": "SNIP",
+  "cod": "SNIP"
+}
+```
+
