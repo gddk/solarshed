@@ -1,5 +1,10 @@
 # rpi
-Personal rasberry pi projects
+
+Raspberry Pi to control a pair of SSR to maximize efficiency of solar use.
+
+## WARNING: HIGH VOLTAGE
+
+This is dangerous. Serious injury or death may occur. This is NOT to be done by students or anyone not familiar with the dangers of high voltage electricity.
 
 ## Overview
 
