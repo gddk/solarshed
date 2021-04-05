@@ -6,6 +6,7 @@ import os.path
 import requests
 import socket
 import json
+import time
 import secrets
 from mate2.mate2 import Mate2
 from temperature.temperature import Temperature
@@ -19,6 +20,8 @@ def is_sunny():
     w = Weather(secrets.openweather_api_key, secrets.openweather_lat,
                 secrets.openweather_lon)
     weather = w.get_weather()
+    if hasattr(w, 'warning'):
+        print('Weather WARNING: {}'.format(w.warning))
     if not weather:
         print('No weather data, assume DARK')
         send_graphite('solar.weatherapi.up', 0)
@@ -86,6 +89,17 @@ def grid_mode_always():
     return False
 
 
+def get_last_change_seconds_ago():
+    if os.path.isfile('/tmp/solar.last.change'):
+        return int(time.time() - os.path.getmtime('/tmp/solar.last.change'))
+    return 86400
+
+
+def save_last_change(note):
+    with open('/tmp/solar.last.change', 'w') as fp:
+        fp.write('{} {}\n'.format(datetime.datetime.now().strftime('%c'), note))
+
+
 def main():
     ssr1 = SSR(17)
     ssr2 = SSR(27)
@@ -141,19 +155,25 @@ def main():
     print('bvolts={}'.format(bvolts))
     send_graphite('solar.bvolts', bvolts)
     note = 'no change'
-    if not grid_on and (grid_mode or
-                        not sunny or
-                        bvolts < secrets.low_bvolts
-                        ):
+    last_change = get_last_change_seconds_ago()
+    print('last_change={} seconds ago'.format(last_change))
+    if last_change > secrets.change_delay_seconds and not grid_on and (
+            grid_mode or
+            not sunny or
+            bvolts < secrets.low_bvolts):
         ssr1.on()
         ssr2.on()
         note = 'toggled ON'
         grid_on = True
-    elif grid_on and sunny and not grid_mode and bvolts >= secrets.low_bvolts:
+        save_last_change(note)
+    elif last_change > secrets.change_delay_seconds and grid_on and sunny and \
+            not grid_mode and bvolts >= secrets.low_bvolts:
         ssr1.off()
         ssr2.off()
         note = 'toggled OFF'
         grid_on = False
+        save_last_change(note)
+
 
     send_graphite('solar.ssr1.state', ssr1.state)
     send_graphite('solar.ssr2.state', ssr2.state)

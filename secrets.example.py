@@ -16,3 +16,7 @@ mate2_devices = 2
 
 # If the battery voltage drops below this, toggle grid on
 low_bvolts = 49.9
+
+# Prevent toggling back and forth too fast. If changed from/to grid ON or OFF
+# then wait change_delay_seconds before changing again
+change_delay_seconds = 300
