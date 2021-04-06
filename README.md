@@ -14,7 +14,7 @@ This repo also gathers health stats of the solar shed for graphing over time. It
 
 It also monitors health stats and does alerting, through PagerDuty [PageDuty](https://www.pagerduty.com/) and [AWS](https://aws.amazon.com/).
 
-![Raspberry Pi Controlling SSR Top](images/solarshed_outside_box.jpg "Raspberry Pi Controlling SSR Top")
+![Raspberry Pi Controlling SSR Top](images/rpi_outside_box.jpg "Raspberry Pi Controlling SSR Top")
 
 ![Raspberry Pi Controlling SSR Inside](images/ssr_inside_box.jpg "Raspberry Pi Controlling SSR Inside")
 
