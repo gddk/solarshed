@@ -89,16 +89,26 @@ def grid_mode_always():
     return False
 
 
-def get_last_change_seconds_ago():
+def check_ok_to_toggle_ssr():
     if os.path.isfile('/var/tmp/solarshed.last.change'):
-        return int(time.time() - os.path.getmtime(
+        since = int(time.time() - os.path.getmtime(
             '/var/tmp/solarshed.last.change'))
-    return 86400
+        raw = ''
+        with open('/var/tmp/solarshed.last.change', 'r') as fp:
+            raw = fp.read()
+        ssr_on = raw.find('ON') >= 0
+        ssr_off = raw.find('OFF') >= 0
+        if ssr_on and since < secrets.change_delay_seconds_off:
+            return False
+        if ssr_off and since < secrets.change_delay_seconds_on:
+            return False
+    return True
 
 
 def save_last_change(note):
     with open('/var/tmp/solarshed.last.change', 'w') as fp:
-        fp.write('{} {}\n'.format(datetime.datetime.now().strftime('%c'), note))
+        fp.write('{} {}\n'.format(
+            datetime.datetime.now().strftime('%c'), note))
 
 
 def main():
@@ -119,7 +129,7 @@ def main():
     except Exception as e:
         print('Exception occurred in get_mate2_status() :{}'.format(e))
     if mate2.get('devices', {}).get('B', {}).get(
-        'battery_voltage', None) is not None:
+            'battery_voltage', None) is not None:
         write_json_cache('/var/tmp/solarshed.mate2.last.json', mate2)
     else:
         print('WARNING: no mate2 data available, checking if cache is good')
@@ -156,9 +166,9 @@ def main():
     print('bvolts={}'.format(bvolts))
     send_graphite('solar.bvolts', bvolts)
     note = 'no change'
-    last_change = get_last_change_seconds_ago()
-    print('last_change={} seconds ago'.format(last_change))
-    if last_change > secrets.change_delay_seconds and not grid_on and (
+    toggle_ok = check_ok_to_toggle_ssr()
+    print('toggle_od={}'.format(toggle_ok))
+    if toggle_ok and not grid_on and (
             grid_mode or
             not sunny or
             bvolts < secrets.low_bvolts):
@@ -167,14 +177,13 @@ def main():
         note = 'toggled ON'
         grid_on = True
         save_last_change(note)
-    elif last_change > secrets.change_delay_seconds and grid_on and sunny and \
+    elif toggle_ok and grid_on and sunny and \
             not grid_mode and bvolts >= secrets.low_bvolts:
         ssr1.off()
         ssr2.off()
         note = 'toggled OFF'
         grid_on = False
         save_last_change(note)
-
 
     send_graphite('solar.ssr1.state', ssr1.state)
     send_graphite('solar.ssr2.state', ssr2.state)

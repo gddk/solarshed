@@ -18,5 +18,7 @@ mate2_devices = 2
 low_bvolts = 49.9
 
 # Prevent toggling back and forth too fast. If changed from/to grid ON or OFF
-# then wait change_delay_seconds before changing again
-change_delay_seconds = 300
+# then wait change_delay_seconds_on before changing to ssr state ON again.
+# and wait change_delay_seconds_off before changing to ssr state OFF again.
+change_delay_seconds_on = 300
+change_delay_seconds_off = 600
