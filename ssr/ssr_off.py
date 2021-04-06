@@ -1,4 +1,4 @@
-#!/home/pi/venvs/rpi/bin/python
+#!/home/pi/venvs/solarshed/bin/python
 from ssr import SSR
 
 ssr1 = SSR(17)

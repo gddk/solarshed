@@ -1,4 +1,4 @@
-#!/home/pi/venvs/rpi/bin/python
+#!/home/pi/venvs/solarshed/bin/python
 
 from ssr.ssr import SSR
 import datetime
@@ -81,8 +81,8 @@ def send_graphite(name, value):
 
 
 def grid_mode_always():
-    if os.path.isfile('/home/pi/code/rpi/gridmode'):
-        with open('/home/pi/code/rpi/gridmode', 'r') as fp:
+    if os.path.isfile('/home/pi/code/solarshed/gridmode'):
+        with open('/home/pi/code/solarshed/gridmode', 'r') as fp:
             raw = fp.read()
             if raw.startswith('ON'):
                 return True
@@ -90,13 +90,14 @@ def grid_mode_always():
 
 
 def get_last_change_seconds_ago():
-    if os.path.isfile('/tmp/solar.last.change'):
-        return int(time.time() - os.path.getmtime('/tmp/solar.last.change'))
+    if os.path.isfile('/var/tmp/solarshed.last.change'):
+        return int(time.time() - os.path.getmtime(
+            '/var/tmp/solarshed.last.change'))
     return 86400
 
 
 def save_last_change(note):
-    with open('/tmp/solar.last.change', 'w') as fp:
+    with open('/var/tmp/solarshed.last.change', 'w') as fp:
         fp.write('{} {}\n'.format(datetime.datetime.now().strftime('%c'), note))
 
 
@@ -119,10 +120,10 @@ def main():
         print('Exception occurred in get_mate2_status() :{}'.format(e))
     if mate2.get('devices', {}).get('B', {}).get(
         'battery_voltage', None) is not None:
-        write_json_cache('/tmp/mate2.last.json', mate2)
+        write_json_cache('/var/tmp/solarshed.mate2.last.json', mate2)
     else:
         print('WARNING: no mate2 data available, checking if cache is good')
-        mate2 = get_json_cache('/tmp/mate2.last.json', 10)
+        mate2 = get_json_cache('/var/tmp/solarshed.mate2.last.json', 10)
 
     if not mate2:
         mate2 = {}

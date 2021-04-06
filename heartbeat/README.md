@@ -4,10 +4,10 @@ Alert when raspberry pi stops working
 
 ## cron
 
-This entry from [../cron.d/rpi](../cron.d/rpi) pushes the heartbeat.txt file to AWS every 5 minutes.
+This entry from [../cron.d/solarshed](../cron.d/solarshed) pushes the heartbeat.txt file to AWS every 5 minutes.
 
 ```
-*/5 * * * * pi BUCKET=yourBucket /home/pi/code/rpi/heartbeat/heartbeat.sh >/tmp/heartbeat.last.log 2>&1
+*/5 * * * * pi BUCKET=yourBucket /home/pi/code/solarshed/heartbeat/heartbeat.sh >/var/tmp/heartbeat.last.log 2>&1
 ```
 
 The idea is then to monitor the timestamp on this file in AWS S3 using a lambda that will alert if too old.

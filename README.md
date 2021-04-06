@@ -1,10 +1,10 @@
-# rpi
+# solarshed
 
 Raspberry Pi to control a pair of SSR to maximize efficiency of solar use.
 
 ## WARNING: HIGH VOLTAGE
 
-This is dangerous. Serious injury or death may occur. This is NOT to be done by students or anyone not familiar with the dangers of high voltage electricity.
+This is dangerous. Serious injury or death may occur. This is NOT to be done by students or anyone not familiar with the dangers of high voltage electricity. Please use extreme caution and safety measures attempting to replicate this.
 
 ## Overview
 
@@ -14,7 +14,7 @@ This repo also gathers health stats of the solar shed for graphing over time. It
 
 It also monitors health stats and does alerting, through PagerDuty [PageDuty](https://www.pagerduty.com/) and [AWS](https://aws.amazon.com/).
 
-![Raspberry Pi Controlling SSR Top](images/rpi_outside_box.jpg "Raspberry Pi Controlling SSR Top")
+![Raspberry Pi Controlling SSR Top](images/solarshed_outside_box.jpg "Raspberry Pi Controlling SSR Top")
 
 ![Raspberry Pi Controlling SSR Inside](images/ssr_inside_box.jpg "Raspberry Pi Controlling SSR Inside")
 
@@ -40,7 +40,7 @@ Mounting Type:Through Hole
 Supplier Device Package:TO-92 
 ```
 
-* The 2n3904 npn Transistor requires 0.7V at 0.18mA, or 0.00018 A, to activate. The actual I(B), or β, or Beta, is dependent on the current through the collector and emitter. Not sure how to calculate this.  I(B) = I(C) / β. I(C) = 4.6mA = 0.0046A. The β spec is "DC Current Gain (hFE) (Min) @ Ic, Vce:100 @ 10mA, 1V". Our circuit is 4.6mA, not sure how to do this math, so let's use β of 100. I(B) = 0.004.6/100 = 0.000046. 2.6V/0.000046 = 57kΩ. Closest resistor in stock is 47kΩ, if we used that I = V/R = 2.6/47000 = 0.000055 A = 0.0055mA. That "seems" too little. Lets stick with 0.18mA needed. Or, can we assume that Gain of 100 @ 10mA means 46 @ 4.6mA? Then I(B) = 0.0046 / 46 = 0.0001. Then R = 2.6/ 0.0001 = 26,000 Ω. Are we splitting hairs? Anything less than 1mA isn't drawing too much current. What is at risk if we do not use enough resistance? Too little resistance and we fry the transistor? Or worse the raspberry pi. Too much resistance and the transistor does not operate. There is likely a range of acceptable current and as long as we are in that range, all will be fine. Sticking with 0.7V and 0.18mA. If we fry the transistor, they are super cheap, will replace and up the resistance. I suppose we could try the 47kΩ and see if the transistor will operate.
+* The 2n3904 npn Transistor requires 0.7V at 0.18mA, or 0.00018 A, to activate. The actual I(B), or β, or Beta, is dependent on the current through the collector and emitter. Not sure how to calculate this.  I(B) = I(C) / β. I(C) = 4.6mA = 0.0046A. The β spec is "DC Current Gain (hFE) (Min) @ Ic, Vce:100 @ 10mA, 1V". Our circuit is 4.6mA, not sure how to do this math, so let's use β of 100. I(B) = 0.004.6/100 = 0.000046. 2.6V/0.000046 = 57kΩ. Closest resistor in stock is 47kΩ, if we used that I = V/R = 2.6/47000 = 0.000055 A = 0.0055mA. That "seems" too little. Lets stick with 0.18mA needed. Or, can we assume that Gain of 100 @ 10mA means 46 @ 4.6mA? Then I(B) = 0.0046 / 46 = 0.0001. Then R = 2.6/ 0.0001 = 26,000 Ω. Are we splitting hairs? Anything less than 1mA isn't drawing too much current. What is at risk if we do not use enough resistance? Too little resistance and we fry the transistor? Or worse the raspberry pi. Too much resistance and the transistor does not operate. There is likely a range of acceptable current and as long as we are in that range, all will be fine. Sticking with 0.7V and 0.18mA. If we fry the transistor, they are super cheap, will replace and up the resistance. I suppose we could try the 47kΩ and see if the transistor will operate. One day will do this. If anybody knows the correct resistance calculation based on the specs, please inform.
 * The GPIO pin puts out 3.3V
 * V = 3.3V - 0.7V = 2.6V
 * I = 0.00018 A - this is how little current will be taken from the GPIO pin to activate the transistor.
@@ -147,6 +147,8 @@ This was the first sub-project, because the part used, [SunFounder DS18B20 Tempe
 
 See [7_temperature](7_temperature/) for all the details of getting the temperature monitor sending data every minute to graphite.
 
+UPDATE: all writing to graphite is done with [solarshed_controller.py](solarshed_controller.py) now.
+
 ## Grafana alerting to PagerDuty
 
 To setup the alerting, with your PagerDuty account, go into the Services area, then the Service, then Integrations and "Add a new integration to this service". Copy the Integration key into Grafana. Then setup the alerts in the graphs like this.
@@ -160,21 +162,22 @@ To setup the alerting, with your PagerDuty account, go into the Services area, t
 
 See [ssr/ssr_write_state.py](ssr/ssr_write_state.py) for the details on getting the SSR state to graphite so we can graph and monitor it in grafana.
 
-## Get MATE2 stats over DB9 RS232 Serial Cable
+UPDATE: all writing to graphite is done with [solarshed_controller.py](solarshed_controller.py) now.
 
-2021-03-21 NOTE: The hardware has not arrived yet. This is the next sub-project to do.
+## Get MATE2 stats over DB9 RS232 Serial Cable
 
 * [Ableconn PI232DB9M Compact GPIO TX/RX to DB9M RS232 Serial Expansion Board for Raspberry Pi](https://www.amazon.com/gp/product/B00WPBXDJC/)
 * [StarTech.com 2m Black Straight Through DB9 RS232 Serial Cable - DB9 RS232 Serial Extension Cable - Male to Female Cable MXT1002MBK, 6.6 ft / 2m](https://www.amazon.com/gp/product/B00A6GIUZA/)
 
-Should be here Tuesday 3/23.
+Did not get this setup working ^ due to lack of understanding how  to configure the serial connection. So, went with this instead:
 
-This will allow fetch of the battery voltage, which is the single most important factor in determining if Grid should be ON, meaning SSRs in the ON position. 
+* [CableCreation 6.6 Feet USB to RS232 Adapter with PL2303 Chipset, Gold Plated USB 2.0 to DB9 Serial Converter Cable Support Cashier Register, Modem, Scanner, Digital Cameras,CNC etc, 2M /Black ](https://www.amazon.com/gp/product/B0758BWVXF/)
 
-I am worried about toggling... i.e. the battery voltage drops below threshold triggering the SSRs to be ON, and then the battery voltage shoots up once the load is removed, triggering the SSRs to be turned OFF again. Will need to build in a time delay for once the SSRs are turned ON, do not turn OFF again for at least X minutes, where X is dependent on the time of day. If still sunny out, X can be 30 minutes, but if it's dark out, stay ON (grid on) until it's light out again. 
+This USB to RS232 cable is much easier to setup anyways, no breadboard needed. See [mate2/](mate2/) for how to configure the serial terminal connection in python and miniterm.
 
-The algorithm for decideing if SSR OFF (grid off, solar on) should be activated: It has been >X minutes since last SSR ON event AND it is sunny AND battery voltage > Y Volts. We can play with X and Y to find the most optimal values, start with 30 and 50.
+This will allow fetch of the battery voltage, which is the single most important factor in determining if Grid should be ON, meaning SSRs in the ON position. Other stats collected charger_current, pv_input_voltage and daily_kwh.
 
+Worried about toggling? What if the battery voltage drops below threshold triggering the SSRs to be ON, and then the battery voltage shoots up once the load is removed, triggering the SSRs to be turned OFF again. There is a time delay for once the SSRs are turned ON, do not turn OFF again for at least X minutes, and visa versa. X is configurable, see [secrets.example.py](secrets.example.py).
 
 ## Weather
 
@@ -194,18 +197,7 @@ cp secrets.example.py secrets.py
 # configure secrets.py for your situation
 ```
 
-
-Example of mess ups occurrsing
-```
-2021-03-25 07:35:06 solar.temp_f 50.21 solar.temp_c 10.12  now=2021-03-25 07:35:02.118500 outside_temp_f=37.71 humidity=41 wind_speed=8.05 cloudiness=1 adjusted sunrise=2021-03-25 08:56:14 adjusted sunset=2021-03-25 17:15:29 after_sunrise_seconds=-4871.8815 before_sunset_seconds=34826.8815 DARK 2021-03-25T14:35:02+0000 ssr1: 1 ssr2: 1 no change grid_mode: False
-2021-03-25 07:30:06 solar.temp_f 50.10 solar.temp_c 10.06  now=2021-03-25 07:30:02.130970 WARNING: Exception occurred getting weather: HTTPSConnectionPool(host='api.openweathermap.org', port=443): Max retries exceeded with url: /data/2.5/weather?lat=34.6769073&lon=-112.5243696&units=imperial&appid=a985e0997f8e108e067ac6202f72c129 (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0xb5f0c4b0>: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')) WARNING: no weather data available, checking if cache is good WARNING: using /tmp/weather.last.json cache outside_temp_f=36.5 humidity=41 wind_speed=8.05 cloudiness=1 adjusted sunrise=2021-03-25 08:56:14 adjusted sunset=2021-03-25 17:15:29 after_sunrise_seconds=-5171.86903 before_sunset_seconds=35126.86903 DARK 2021-03-25T14:30:02+0000 ssr1: 1 ssr2: 1 no change grid_mode: False
-2021-03-25 07:25:07 solar.temp_f 50.10 solar.temp_c 10.06  now=2021-03-25 07:25:02.376869 WARNING: Exception occurred getting weather: HTTPSConnectionPool(host='api.openweathermap.org', port=443): Max retries exceeded with url: /data/2.5/weather?lat=34.6769073&lon=-112.5243696&units=imperial&appid=a985e0997f8e108e067ac6202f72c129 (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0xb5f024f0>: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')) WARNING: no weather data available, checking if cache is good WARNING: using /tmp/weather.last.json cache outside_temp_f=36.5 humidity=41 wind_speed=8.05 cloudiness=1 adjusted sunrise=2021-03-25 08:56:14 adjusted sunset=2021-03-25 17:15:29 after_sunrise_seconds=-5471.623131 before_sunset_seconds=35426.623131 DARK 2021-03-25T14:25:02+0000 ssr1: 1 ssr2: 1 no change grid_mode: False
-2021-03-25 07:20:06 solar.temp_f 50.10 solar.temp_c 10.06  now=2021-03-25 07:20:01.641613 WARNING: Exception occurred getting weather: HTTPSConnectionPool(host='api.openweathermap.org', port=443): Max retries exceeded with url: /data/2.5/weather?lat=34.6769073&lon=-112.5243696&units=imperial&appid=a985e0997f8e108e067ac6202f72c129 (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0xb5eb6430>: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution')) WARNING: no weather data available, checking if cache is good WARNING: using /tmp/weather.last.json cache outside_temp_f=36.5 humidity=41 wind_speed=8.05 cloudiness=1 adjusted sunrise=2021-03-25 08:56:14 adjusted sunset=2021-03-25 17:15:29 after_sunrise_seconds=-5772.358387 before_sunset_seconds=35727.358387 DARK 2021-03-25T14:20:01+0000 ssr1: 1 ssr2: 1 no change grid_mode: False
-2021-03-25 07:15:06 solar.temp_f 50.10 solar.temp_c 10.06  now=2021-03-25 07:15:01.525533 outside_temp_f=36.5 humidity=41 wind_speed=8.05 cloudiness=1 adjusted sunrise=2021-03-25 08:56:14 adjusted sunset=2021-03-25 17:15:29 after_sunrise_seconds=-6072.474467 before_sunset_seconds=36027.474467 DARK 2021-03-25T14:15:01+0000 ssr1: 1 ssr2: 1 no change grid_mode: False
-2021-03-25 07:10:07 solar.temp_f 50.10 solar.temp_c 10.06 
-```
-
-## weather.py
+### weather.py
 
 Code usage:
 ```

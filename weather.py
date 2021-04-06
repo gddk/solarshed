@@ -4,7 +4,8 @@ from json_cache import write_json_cache, get_json_cache
 
 class Weather:
     def __init__(self, api_key, lat, lon,
-                 cache_file='/tmp/weather.last.json', cache_minutes=30):
+                 cache_file='/var/tmp/solarshed.weather.last.json',
+                 cache_minutes=30):
         self.api_key = api_key
         self.lat = lat
         self.lon = lon

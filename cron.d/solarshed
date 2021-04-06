@@ -1,0 +1,2 @@
+*/5 * * * * pi BUCKET=solarshed /home/pi/code/solarshed/heartbeat/heartbeat.sh >/var/tmp/solarshed.heartbeat.last.log 2>&1
+* * * * * pi /home/pi/code/solarshed/solarshed_controller.py > /var/tmp/solarshed_controller.last.log 2>&1

@@ -42,8 +42,8 @@ source temperature/bin/activate
 cd
 mkdir -p code
 cd code
-git clone https://github.com/gddk/rpi.git
-cd rpi/7_temperature
+git clone https://github.com/gddk/solarshed.git
+cd solarshed/7_temperature
 ```
 
 ## Run the code
@@ -57,7 +57,7 @@ cd rpi/7_temperature
 Get this running in a tmux or screen session and just let it go on and on
 ```
 while [ 1 ]; do
-    t=$(/home/pi/code/rpi/7_temperature/7_temperature.py)
+    t=$(/home/pi/code/solarshed/7_temperature/7_temperature.py)
     val_f="solar.temp_f $(echo $t | egrep -o '^[0-9.]*') $(date +%s)";
     val_c="solar.temp_c $(echo $t | egrep -o '[0-9.]*C$' | sed -e 's/C//') $(date +%s)"
     echo "$(date +"%Y-%m-%d %H:%M") $val_f"
@@ -70,16 +70,16 @@ done
 
 or better yet, put it in cron:
 ```
-echo "* * * * * pi /home/pi/code/rpi/7_temperature/7_temperature.sh > /tmp/7_temperature.last.log" | sudo tee /etc/cron.d/7_temperature
+echo "* * * * * pi /home/pi/code/solarshed/7_temperature/7_temperature.sh > /var/tmp/7_temperature.last.log" | sudo tee /etc/cron.d/7_temperature
 ```
 
 Realizing we do not need python for this:
 
 ```
-echo "* * * * * pi /home/pi/code/rpi/7_temperature/7_temperature_pure_bash.sh > /tmp/7_temperature.last.log" | sudo tee /etc/cron.d/7_temperature
+echo "* * * * * pi /home/pi/code/solarshed/7_temperature/7_temperature_pure_bash.sh > /var/tmp/7_temperature.last.log" | sudo tee /etc/cron.d/7_temperature
 ```
 
-NOTE: all cron entries are in [../cron.d/rpi](../cron.d/rpi)
+NOTE: all cron entries are in [../cron.d/solarshed](../cron.d/solarshed)
 
 ## import temperature
 
