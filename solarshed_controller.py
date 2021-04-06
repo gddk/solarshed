@@ -3,7 +3,6 @@
 from ssr.ssr import SSR
 import datetime
 import os.path
-import requests
 import socket
 import json
 import time
@@ -98,6 +97,8 @@ def check_ok_to_toggle_ssr():
             raw = fp.read()
         ssr_on = raw.find('ON') >= 0
         ssr_off = raw.find('OFF') >= 0
+        print('since={}, ssr_on={}, ssr_off={}, raw={}'.format(
+            since, ssr_on, ssr_off, raw.strip()))
         if ssr_on and since < secrets.change_delay_seconds_off:
             return False
         if ssr_off and since < secrets.change_delay_seconds_on:
@@ -109,6 +110,33 @@ def save_last_change(note):
     with open('/var/tmp/solarshed.last.change', 'w') as fp:
         fp.write('{} {}\n'.format(
             datetime.datetime.now().strftime('%c'), note))
+
+
+def send_mate2_to_graphite_get_bvolts(mate2):
+    bvolts = 0.0
+    bvolts_counter = 0
+    for key in mate2.get('devices', {}).keys():
+        m = mate2['devices'][key]
+        if m.get('battery_voltage', None) is not None:
+            send_graphite('solar.{}.battery_voltage'.format(key),
+                          m['battery_voltage'])
+        if m.get('charger_current', None) is not None:
+            send_graphite('solar.{}.charger_current'.format(key),
+                          m['charger_current'])
+        if m.get('pv_input_voltage', None is not None):
+            send_graphite('solar.{}.pv_input_voltage'.format(key),
+                          m['pv_input_voltage'])
+        if m.get('daily_kwh', None) is not None:
+            send_graphite('solar.{}.daily_kwh'.format(key),
+                          m['daily_kwh'])
+        if m.get('daily_amph', None) is not None:
+            send_graphite('solar.{}.daily_amph'.format(key),
+                          m['daily_amph'])
+        if m.get('battery_voltage', None) is not None:
+            bvolts_counter += 1
+            bvolts = round(
+                (bvolts + m['battery_voltage']) / bvolts_counter, 2)
+    return bvolts
 
 
 def main():
@@ -139,29 +167,7 @@ def main():
         mate2 = {}
 
     print('mate2=' + json.dumps(mate2))
-    bvolts = 0.0
-    bvolts_counter = 0
-    for key in mate2.get('devices', {}).keys():
-        m = mate2['devices'][key]
-        if m.get('battery_voltage', None) is not None:
-            send_graphite('solar.{}.battery_voltage'.format(key),
-                          m['battery_voltage'])
-        if m.get('charger_current', None) is not None:
-            send_graphite('solar.{}.charger_current'.format(key),
-                          m['charger_current'])
-        if m.get('pv_input_voltage', None is not None):
-            send_graphite('solar.{}.pv_input_voltage'.format(key),
-                          m['pv_input_voltage'])
-        if m.get('daily_kwh', None) is not None:
-            send_graphite('solar.{}.daily_kwh'.format(key),
-                          m['daily_kwh'])
-        if m.get('daily_amph', None) is not None:
-            send_graphite('solar.{}.daily_amph'.format(key),
-                          m['daily_amph'])
-        if m.get('battery_voltage', None) is not None:
-            bvolts_counter += 1
-            bvolts = round(
-                (bvolts + m['battery_voltage']) / bvolts_counter, 2)
+    bvolts = send_mate2_to_graphite_get_bvolts(mate2)
     bvolts = round(bvolts, 1)
     print('bvolts={}'.format(bvolts))
     send_graphite('solar.bvolts', bvolts)
