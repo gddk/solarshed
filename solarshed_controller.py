@@ -167,7 +167,7 @@ def main():
     send_graphite('solar.bvolts', bvolts)
     note = 'no change'
     toggle_ok = check_ok_to_toggle_ssr()
-    print('toggle_od={}'.format(toggle_ok))
+    print('toggle_ok={}'.format(toggle_ok))
     if toggle_ok and not grid_on and (
             grid_mode or
             not sunny or
