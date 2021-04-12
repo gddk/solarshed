@@ -145,7 +145,7 @@ See [heartbeat](heartbeat/) for all the details.
 
 This was the first sub-project, because the part used, [SunFounder DS18B20 Temperature Sensor Module for Arduino and Raspberry Pi](https://www.amazon.com/gp/product/B013GB27HS/), arrived quickly and first. We need to get alerted if the temperature is too high, i.e. above 95F. The plan is to take immediate measures of toggling OFF grid power, in case the problem is too much current (AMPs) going through the SSRs and the heat not getting dispelled. This could be due to the fan failing. Granted, if we switch to grid power at night or on a cloudy day, we could run out of battery, especially considering it got toggled ON to grid power when reaching a low threshold, ie 65% DOD, so there isn't much left on the batteries anyway. Luckily the inverter will auto shutdown if the battery voltage drops below 49%.
 
-See [7_temperature](7_temperature/) for all the details of getting the temperature monitor sending data every minute to graphite.
+See [temperature](temperature/) for all the details of getting the temperature monitor sending data every minute to graphite.
 
 UPDATE: all writing to graphite is done with [solarshed_controller.py](solarshed_controller.py) now.
 

@@ -36,3 +36,8 @@ class Temperature:
 
     C = property(get_C)
     F = property(get_F)
+
+
+if __name__ == '__main__':
+    t = Temperature(5)
+    print('%sF, %sC' % (t.F, t.C))

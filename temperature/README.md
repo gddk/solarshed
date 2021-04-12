@@ -1,4 +1,4 @@
-# 7_temperature
+# temperature
 
 Making SunFounder DS18B20 Temperature Sensor Module for Arduino and Raspberry Pi work
 
@@ -24,7 +24,7 @@ sudo shutdown -h now
 
 ## Now wire up like this
 
-![SunFounder DS18B20 Wired to Rasberry Pi 4](7_temperature-compressed.jpg "SunFounder DS18B20 Wired to Rasberry Pi 4")
+![SunFounder DS18B20 Wired to Rasberry Pi 4](temperature-compressed.jpg "SunFounder DS18B20 Wired to Rasberry Pi 4")
 
 ## Setup python3 Virtual Env
 
@@ -43,21 +43,24 @@ cd
 mkdir -p code
 cd code
 git clone https://github.com/gddk/solarshed.git
-cd solarshed/7_temperature
+cd solarshed/temperature
 ```
 
 ## Run the code
 ```
-(temperature) pi@raspberrypi:~/code/temperature $ ./7_temperature.py
+(temperature) pi@raspberrypi:~/code/temperature $ python temperature.py
 66.99F, 19.44C
 ```
 
 
 ## Send to graphite every 60s
 Get this running in a tmux or screen session and just let it go on and on
+
+WARNING: this is done inside [solarshed_controller.py](../solarshed_controller.py) now, this was just conceptual
+
 ```
 while [ 1 ]; do
-    t=$(/home/pi/code/solarshed/7_temperature/7_temperature.py)
+    t=$(python /home/pi/code/solarshed/temperature/temperature.py)
     val_f="solar.temp_f $(echo $t | egrep -o '^[0-9.]*') $(date +%s)";
     val_c="solar.temp_c $(echo $t | egrep -o '[0-9.]*C$' | sed -e 's/C//') $(date +%s)"
     echo "$(date +"%Y-%m-%d %H:%M") $val_f"
@@ -68,18 +71,6 @@ while [ 1 ]; do
 done
 ```
 
-or better yet, put it in cron:
-```
-echo "* * * * * pi /home/pi/code/solarshed/7_temperature/7_temperature.sh > /var/tmp/7_temperature.last.log" | sudo tee /etc/cron.d/7_temperature
-```
-
-Realizing we do not need python for this:
-
-```
-echo "* * * * * pi /home/pi/code/solarshed/7_temperature/7_temperature_pure_bash.sh > /var/tmp/7_temperature.last.log" | sudo tee /etc/cron.d/7_temperature
-```
-
-NOTE: all cron entries are in [../cron.d/solarshed](../cron.d/solarshed)
 
 ## import temperature
 
@@ -98,7 +89,3 @@ print('The temperature is %sC' % t.C)
 The reason we do Temperature(30) is that it takes about 1 second to read the 1 wire device, so we want to cache the answer.
 30 is the number of seconds to cache the answer for.
 
-
-## Monitoring with PagerDuty
-
-Using grafana to send alerts to PagerDuty when temperature thresholds are breached.
