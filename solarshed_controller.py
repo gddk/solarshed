@@ -79,13 +79,16 @@ def send_graphite(name, value):
         s.sendall(msg.encode('ascii'))
 
 
-def grid_mode_always():
+def grid_mode():
+    mode = 'AUTO'
     if os.path.isfile('/home/pi/code/solarshed/gridmode'):
         with open('/home/pi/code/solarshed/gridmode', 'r') as fp:
             raw = fp.read()
             if raw.startswith('ON'):
-                return True
-    return False
+                mode = 'ON'
+            elif raw.startswith('OFF'):
+                mode = 'OFF'
+    return mode
 
 
 def check_ok_to_toggle_ssr():
@@ -143,8 +146,10 @@ def main():
     ssr1 = SSR(17)
     ssr2 = SSR(27)
     now = datetime.datetime.now(datetime.timezone.utc)
-    grid_mode = grid_mode_always()
+    gmode = grid_mode()
+    print('gmode={}'.format(gmode))
     grid_on = True if ssr1.state and ssr2.state else False
+    print('grid_on={}'.format(grid_on))
     sunny = is_sunny()
     t = Temperature()
     send_graphite('solar.temp_f', t.F)
@@ -174,17 +179,17 @@ def main():
     note = 'no change'
     toggle_ok = check_ok_to_toggle_ssr()
     print('toggle_ok={}'.format(toggle_ok))
-    if toggle_ok and not grid_on and (
-            grid_mode or
-            not sunny or
-            bvolts < secrets.low_bvolts):
+    if not grid_on and (gmode == 'ON' or (
+            toggle_ok and gmode == 'AUTO' and (
+                not sunny or bvolts < secrets.low_bvolts))):
         ssr1.on()
         ssr2.on()
         note = 'toggled ON'
         grid_on = True
         save_last_change(note)
-    elif toggle_ok and grid_on and sunny and \
-            not grid_mode and bvolts >= secrets.low_bvolts:
+    elif grid_on and (gmode == 'OFF' or (
+            toggle_ok and gmode == 'AUTO' and sunny and
+            bvolts >= secrets.low_bvolts)):
         ssr1.off()
         ssr2.off()
         note = 'toggled OFF'
@@ -193,12 +198,12 @@ def main():
 
     send_graphite('solar.ssr1.state', ssr1.state)
     send_graphite('solar.ssr2.state', ssr2.state)
-    print('{} ssr1: {} ssr2: {} {} grid_mode: {}'.format(
+    print('{} ssr1: {} ssr2: {} {} gmode: {}'.format(
         now.strftime('%Y-%m-%dT%H:%M:%S%z'),
         ssr1.state,
         ssr2.state,
         note,
-        grid_mode
+        gmode
     ))
 
 
