@@ -1,4 +1,5 @@
-#!/home/pi/venvs/solarshed/bin/python
+#!/usr/bin/python3
+# !/home/pi/venvs/solarshed/bin/python
 
 from ssr.ssr import SSR
 import datetime
