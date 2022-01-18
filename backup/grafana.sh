@@ -9,7 +9,7 @@ if [[ "$BUCKET" == "" ]]; then
   exit 2
 fi
 sleep 30
-d="$(date +"%Y-%m-%y-%H-%M")-grafana"
+d="$(date +"%Y-%m-%d-%H-%M")-grafana"
 echo $d
 sudo docker commit -p graphite "$d"
 sudo docker save -o /tmp/${d}.tar $d
