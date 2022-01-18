@@ -21,4 +21,4 @@ ls -lah ${d}.tar.gz
 echo aws s3 cp /tmp/${d}.tar.gz s3://${BUCKET}/${d}.tar.gz
 aws s3 cp /tmp/${d}.tar.gz s3://${BUCKET}/${d}.tar.gz
 echo $?
-rm -f /tmp/${d}.tar.gz
+sudo rm -f /tmp/${d}.tar.gz
