@@ -2,6 +2,7 @@
 
 IFS='
 '
+PATH="${PATH}:/home/pi/.local/bin"
 sleep 30
 touch /var/tmp/solarshed.heartbeat.txt
 echo "$(date +"%Y-%m-%d %H:%M:%S") $(for i in $(cat /var/tmp/solarshed_controller.last.log); do echo -n " $i"; done)" > /var/tmp/solarshed.heartbeat.txt.1
